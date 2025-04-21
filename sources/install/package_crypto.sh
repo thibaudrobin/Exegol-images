@@ -17,6 +17,7 @@ function install_tls-map() {
 function install_rsactftool() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Rsactftool"
+    fapt libmpc-dev
     pipx install --system-site-packages git+https://github.com/RsaCtfTool/RsaCtfTool
     add-history rsactftool
     add-test-command "RsaCtfTool --help"
