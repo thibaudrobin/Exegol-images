@@ -200,12 +200,15 @@ function install_bloodhound-ce() {
     local sharphound_name
     local sharphound_name_lowercase
     curl --location --silent "https://api.github.com/repos/BloodHoundAD/SharpHound/releases/latest" -o "${curl_tempfile}"
-    sharphound_url=$(jq --raw-output '.assets[].browser_download_url | select(contains("debug") | not)' "${curl_tempfile}")
-    sharphound_name=$(jq --raw-output '.assets[].name | select(contains("debug") | not)' "${curl_tempfile}")
+    sharphound_url=$(jq --raw-output '.assets[].browser_download_url | select(contains("debug") | not) | select(contains("sha256") | not)' "${curl_tempfile}")
+    sharphound_name=$(jq --raw-output '.assets[].name | select(contains("debug") | not) | select(contains("sha256") | not)' "${curl_tempfile}")
     # lowercase fix: https://github.com/ThePorgs/Exegol-images/pull/405
-    sharphound_name_lowercase=$(jq --raw-output '.assets[].name | ascii_downcase | select(contains("debug") | not)' "${curl_tempfile}")
+    sharphound_name_lowercase=$(jq --raw-output '.assets[].name | ascii_downcase | select(contains("debug") | not) | select(contains("sha256") | not)' "${curl_tempfile}")
     wget --directory-prefix "${sharphound_path}" "${sharphound_url}"
-    [[ -f "${sharphound_path}/${sharphound_name}" ]] || exit
+    if [[ ! -f "${sharphound_path}/${sharphound_name}" ]]; then
+        echo "Error: SharpHound file '${sharphound_name}' was not downloaded successfully to '${sharphound_path}'."
+        exit 1
+    fi
     mv "${sharphound_path}/${sharphound_name}" "${sharphound_path}/${sharphound_name_lowercase}"
     # Unlike Azurehound, upstream does not provide a sha256 file to check the integrity
     sha256sum "${sharphound_path}/${sharphound_name_lowercase}" > "${sharphound_path}/${sharphound_name_lowercase}.sha256"
@@ -218,19 +221,26 @@ function install_bloodhound-ce() {
     local azurehound_version
     curl --location --silent "https://api.github.com/repos/BloodHoundAD/AzureHound/releases/latest" -o "${curl_tempfile}"
     azurehound_version=$(jq --raw-output '.tag_name' "${curl_tempfile}")
-    azurehound_url_amd64=$(jq --raw-output '.assets[].browser_download_url | select (endswith("azurehound-linux-amd64.zip"))' "${curl_tempfile}")
-    azurehound_url_amd64_sha256=$(jq --raw-output '.assets[].browser_download_url | select (endswith("azurehound-linux-amd64.zip.sha256"))' "${curl_tempfile}")
-    azurehound_url_arm64=$(jq --raw-output '.assets[].browser_download_url | select (endswith("azurehound-linux-arm64.zip"))' "${curl_tempfile}")
-    azurehound_url_arm64_sha256=$(jq --raw-output '.assets[].browser_download_url | select (endswith("azurehound-linux-arm64.zip.sha256"))' "${curl_tempfile}")
+    azurehound_url_amd64=$(jq --raw-output '.assets[].browser_download_url | select (endswith("_linux_amd64.zip"))' "${curl_tempfile}")
+    azurehound_url_amd64_sha256=$(jq --raw-output '.assets[].browser_download_url | select (endswith("_linux_amd64.zip.sha256"))' "${curl_tempfile}")
+    azurehound_url_arm64=$(jq --raw-output '.assets[].browser_download_url | select (endswith("_linux_arm64.zip"))' "${curl_tempfile}")
+    azurehound_url_arm64_sha256=$(jq --raw-output '.assets[].browser_download_url | select (endswith("_linux_arm64.zip.sha256"))' "${curl_tempfile}")
     rm "${curl_tempfile}"
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_amd64}"
-    [[ -f "${azurehound_path}/azurehound-linux-amd64.zip" ]] || exit
+    # Extract filename from URL for AMD64
+    local azurehound_amd64_filename
+    azurehound_amd64_filename=$(basename "${azurehound_url_amd64}")
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_amd64_sha256}"
-    [[ -f "${azurehound_path}/azurehound-linux-amd64.zip.sha256" ]] || exit
+    [[ -f "${azurehound_path}/${azurehound_amd64_filename}" ]] || exit
+    [[ -f "${azurehound_path}/${azurehound_amd64_filename}.sha256" ]] || exit
+    
+    # Extract filename from URL for ARM64
+    local azurehound_arm64_filename
+    azurehound_arm64_filename=$(basename "${azurehound_url_arm64}")
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_arm64}"
-    [[ -f "${azurehound_path}/azurehound-linux-arm64.zip" ]] || exit
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_arm64_sha256}"
-    [[ -f "${azurehound_path}/azurehound-linux-arm64.zip.sha256" ]] || exit
+    [[ -f "${azurehound_path}/${azurehound_arm64_filename}" ]] || exit
+    [[ -f "${azurehound_path}/${azurehound_arm64_filename}.sha256" ]] || exit
     (cd "${azurehound_path}"; sha256sum --check --warn ./*.sha256) || exit
     7z a -tzip -mx9 "${azurehound_path}/azurehound-${azurehound_version}.zip" "${azurehound_path}/azurehound-*"
     # Upstream does not provide a sha256 file for the archive to check the integrity
@@ -284,7 +294,8 @@ function install_aclpwn() {
 function install_impacket() {
     colorecho "Installing Impacket scripts"
     pipx install --system-site-packages git+https://github.com/ThePorgs/impacket
-    pipx inject impacket chardet
+    # Pycryptodome because: https://github.com/fortra/impacket/issues/1634
+    pipx inject impacket chardet pycryptodome
     cp -v /root/sources/assets/grc/conf.ntlmrelayx /usr/share/grc/conf.ntlmrelayx
     cp -v /root/sources/assets/grc/conf.secretsdump /usr/share/grc/conf.secretsdump
     cp -v /root/sources/assets/grc/conf.getgpppassword /usr/share/grc/conf.getgpppassword
@@ -470,7 +481,7 @@ function install_pypykatz() {
     colorecho "Installing pypykatz"
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-04-01"
+    local temp_fix_limit="2025-06-01"
     if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
       criticalecho "Temp fix expired. Exiting."
     else
@@ -714,7 +725,7 @@ function install_pygpoabuse() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-04-01"
+    local temp_fix_limit="2025-06-01"
     if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
       criticalecho "Temp fix expired. Exiting."
     else
@@ -817,7 +828,7 @@ function install_pkinittools() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-04-01"
+    local temp_fix_limit="2025-06-01"
     if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
       criticalecho "Temp fix expired. Exiting."
     else
@@ -994,7 +1005,7 @@ function install_ldaprelayscan() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-04-01"
+    local temp_fix_limit="2025-06-01"
     if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
       criticalecho "Temp fix expired. Exiting."
     else

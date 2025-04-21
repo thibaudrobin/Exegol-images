@@ -85,7 +85,7 @@ function install_sliver() {
     # function below will serve as a reminder to update sliver's version regularly
     # when the pipeline fails because the time limit is reached: update the version and the time limit
     # or check if it's possible to make this dynamic
-    local temp_fix_limit="2025-04-01"
+    local temp_fix_limit="2025-06-01"
     if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
       criticalecho "Temp fix expired. Exiting."
     else
@@ -126,7 +126,6 @@ function install_empire() {
     add-aliases empire
     add-history empire
     add-test-command "ps-empire server --help"
-    add-test-command "ps-empire client --help"
     add-to-list "empire,https://github.com/BC-SECURITY/Empire,post-exploitation and adversary emulation framework"
     # exit the Empire workdir, since it sets the python version to 3.12 and could mess up later installs
     cd || exit

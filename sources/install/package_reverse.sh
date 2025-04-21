@@ -94,9 +94,12 @@ function install_radare2() {
 function install_ghidra() {
     # CODE-CHECK-WHITELIST=add-test-command
     colorecho "Installing Ghidra"
-    wget -P /tmp/ "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_10.1.2_build/ghidra_10.1.2_PUBLIC_20220125.zip"
-    unzip -q /tmp/ghidra_10.1.2_PUBLIC_20220125.zip -d /opt/tools # -q because too much useless verbose
-    rm /tmp/ghidra_10.1.2_PUBLIC_20220125.zip
+    local ghidra_url
+    ghidra_url=$(curl --location --silent "https://api.github.com/repos/NationalSecurityAgency/ghidra/releases/latest" | grep 'browser_download_url' | grep -o 'https://[^"]*')
+    curl --location -o /tmp/ghidra.zip "$ghidra_url"
+    unzip -q /tmp/ghidra.zip -d /opt/tools # -q because too much useless verbose
+    mv -v /opt/tools/ghidra_* /opt/tools/ghidra # ghidra always has a version number in the unzipped folder, lets make it consistent
+    rm /tmp/ghidra.zip
     add-aliases ghidra
     add-history ghidra
     # TODO add-test-command GUI app
@@ -108,10 +111,10 @@ function install_ida() {
     colorecho "Installing IDA"
     if [[ $(uname -m) = 'x86_64' ]]
     then
-        wget -P /tmp/ "https://out7.hex-rays.com/files/idafree77_linux.run"
-        chmod +x /tmp/idafree77_linux.run
-        /tmp/idafree77_linux.run --mode unattended --prefix /opt/tools/idafree-7.7
-        rm /tmp/idafree77_linux.run
+        wget "https://out7.hex-rays.com/files/idafree84_linux.run" -O /tmp/idafree_linux.run
+        chmod +x /tmp/idafree_linux.run # This is the setup wizard
+        /tmp/idafree_linux.run --mode unattended --prefix /opt/tools/idafree
+        rm /tmp/idafree_linux.run
     else
         criticalecho-noexit "This installation function doesn't support architecture $(uname -m), IDA Free only supports x86/x64" && return
     fi
@@ -135,7 +138,7 @@ function install_jd-gui() {
 function install_pwninit() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing pwninit"
-    fapt liblzma-dev
+    fapt liblzma-dev patchelf elfutils
     # Sourcing rustup shell setup, so that rust binaries are found when installing cme
     source "$HOME/.cargo/env"
     cargo install pwninit
