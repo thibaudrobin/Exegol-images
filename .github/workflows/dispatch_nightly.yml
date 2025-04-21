@@ -12,6 +12,10 @@ jobs:
     name: Trigger Private Pipeline
     runs-on: ubuntu-latest
     steps:
+      - name: Get commit title
+        id: get_commit_title
+        run: |
+          echo "commit_message=$(echo "${{ github.event.head_commit.message }}" | head -n 1)" >> $GITHUB_OUTPUT
       - name: Trigger Pipeline Repo
         uses: peter-evans/repository-dispatch@v2
         with:
@@ -21,5 +25,5 @@ jobs:
           client-payload: |
             {
               "sha": "${{ github.sha }}",
-              "commit_message": "${{ github.event.head_commit.message }}"
+              "commit_message": "${{ steps.get_commit_title.outputs.commit_message }}"
             }
