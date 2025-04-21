@@ -25,6 +25,7 @@ jobs:
 
       - name: Trigger Pipeline Repo
         uses: peter-evans/repository-dispatch@v2
+        # passing the title only, as a multi-line string is not supported
         with:
           token: ${{ secrets.PIPELINE_PAT }}
           repository: ThePorgs/Pipelines
@@ -32,5 +33,5 @@ jobs:
           client-payload: |
             {
               "sha": "${{ github.sha }}",
-              "commit_message": "${{ steps.get_commit_title.outputs.commit_title }}" # passing the title only, as a multi-line string is not supported
+              "commit_message": "${{ steps.get_commit_title.outputs.commit_title }}" 
             }
