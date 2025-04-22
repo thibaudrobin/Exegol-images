@@ -35,8 +35,8 @@ function install_rust_cargo() {
 
 function filesystem() {
     colorecho "Preparing filesystem"
-    mkdir -p /opt/tools/bin/ /data/ /var/log/exegol /.exegol/build_pipeline_tests/ /opt/rules/ /opt/lists
-    touch /.exegol/build_pipeline_tests/all_commands.txt
+    mkdir -p /opt/tools/bin/ /data/ /var/log/exegol /.exegol/ /opt/rules/ /opt/lists
+    touch /.exegol/unit_tests_all_commands.txt
     touch /.exegol/installed_tools.csv
     echo "Tool,Link,Description" >> /.exegol/installed_tools.csv
 }
@@ -499,6 +499,7 @@ function package_base() {
     # change default shell
     chsh -s /bin/zsh
 
+    add-history sshpass
     add-history dnsutils
     add-history samba
     add-history ssh
