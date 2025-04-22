@@ -47,15 +47,19 @@ jobs:
     name: Code compliance check
     needs: init
     runs-on: [self-hosted]
-    strategy:
-      fail-fast: false
-      matrix:
-        checked_function: [ "colorecho", "add-aliases", "add-history", "add-test-command", "add-to-list" ]
     steps:
       - name: Checkout
         uses: actions/checkout@main
-      - name: Check ${{ matrix.checked_function }}
-        run: python3 ~/exegol-pipelines-tools/code_compliance_check.py ${{ matrix.checked_function }}
+      - name: Check colorecho
+        run: python3 ~/exegol-pipelines-tools/code_compliance_check.py colorecho
+      - name: Check add-aliases
+        run: python3 ~/exegol-pipelines-tools/code_compliance_check.py add-aliases
+      - name: Check add-history
+        run: python3 ~/exegol-pipelines-tools/code_compliance_check.py add-history
+      - name: Check add-test-command
+        run: python3 ~/exegol-pipelines-tools/code_compliance_check.py add-test-command
+      - name: Check add-to-list
+        run: python3 ~/exegol-pipelines-tools/code_compliance_check.py add-to-list
       - name: Temp-fix check
         run: python3 ~/exegol-pipelines-tools/code_compliance_check.py temp-fix
       - name: Run ShellCheck
