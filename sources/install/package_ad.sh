@@ -1449,11 +1449,12 @@ function install_adminer() {
 }
 
 function install_powerview() {
+    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing powerview.py"
     pipx install git+https://github.com/aniqfakhrul/powerview.py
     add-history powerview.py
     add-test-command "powerview --help"
-    add-to-list "Powerview.py,https://github.com/aniqfakhrul/powerview.py,PowerView.py is an alternative for the awesome original PowerView.ps1 script. Most of the modules used in PowerView are available here ( some of the flags are changed )"
+    add-to-list "Powerview.py,https://github.com/aniqfakhrul/powerview.py,PowerView.py is an alternative for the awesome original PowerView.ps1 script."
 }
 
 # Package dedicated to internal Active Directory tools
