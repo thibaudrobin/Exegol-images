@@ -1565,6 +1565,7 @@ function package_ad() {
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
+    install_godap
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))
