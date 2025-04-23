@@ -233,7 +233,7 @@ function install_bloodhound-ce() {
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_amd64_sha256}"
     [[ -f "${azurehound_path}/${azurehound_amd64_filename}" ]] || exit
     [[ -f "${azurehound_path}/${azurehound_amd64_filename}.sha256" ]] || exit
-    
+
     # Extract filename from URL for ARM64
     local azurehound_arm64_filename
     azurehound_arm64_filename=$(basename "${azurehound_url_arm64}")
@@ -1448,6 +1448,20 @@ function install_adminer() {
     add-to-list "AD-miner,https://github.com/Mazars-Tech/AD_Miner,Active Directory audit tool that leverages cypher queries."
 }
 
+function install_remotemonologue() {
+    colorecho "Installing RemoteMonologue"
+    git -C /opt/tools/ clone --depth 1 https://github.com/3lp4tr0n/RemoteMonologue
+    cd /opt/tools/RemoteMonologue || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install impacket
+    deactivate
+    add-aliases remotemonologue
+    add-history remotemonologue
+    add-test-command "remotemonologue.py --help"
+    add-to-list "RemoteMonologue,https://github.com/3lp4tr0n/RemoteMonologue,A tool to coerce NTLM authentications via DCOM"
+}
+
 # Package dedicated to internal Active Directory tools
 function package_ad() {
     set_env
@@ -1555,6 +1569,7 @@ function package_ad() {
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
+    install_remotemonologue
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))
