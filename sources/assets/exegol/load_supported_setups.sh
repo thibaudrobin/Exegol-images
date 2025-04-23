@@ -219,8 +219,11 @@ function deploy_python3() {
   wrapper_verbose "Deploying python3 packages"
   if [[ -d "$MY_SETUP_PATH/python3" ]]; then
     logger_verbose "Installing python3 packages"
-    # Install every pip3 package listed in the requirements.txt file (if any supplied)
-    [[ $(sed -E "/^\s*([#;]|\/\/|).*$/d" "$MY_SETUP_PATH/python3/requirements.txt" | wc -l) -gt 0 ]] && pip3 install -r "$MY_SETUP_PATH/python3/requirements.txt"
+    # Install every pip3 packages listed in the requirements.txt file (if any supplied)
+    # ignore empty lines, lines with only spaces and comments
+    if grep -vE '^\s*$|^#' "$MY_SETUP_PATH/python3/requirements.txt"; then
+      pip3 install -r "$MY_SETUP_PATH/python3/requirements.txt"
+    fi
   else
     logger_verbose "Importing file template"
     # Import file template
