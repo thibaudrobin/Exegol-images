@@ -1448,6 +1448,16 @@ function install_adminer() {
     add-to-list "AD-miner,https://github.com/Mazars-Tech/AD_Miner,Active Directory audit tool that leverages cypher queries."
 }
 
+function install_godap() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing godap"
+    go install -v github.com/Macmod/godap@latest
+    asdf reshim golang
+    add-history godap
+    add-test-command "godap --help"
+    add-to-list "godap,https://github.com/Macmod/godap,A complete TUI for LDAP."
+}
+
 # Package dedicated to internal Active Directory tools
 function package_ad() {
     set_env
