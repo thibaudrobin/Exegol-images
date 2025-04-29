@@ -9,7 +9,7 @@ on:
 
 jobs:
   trigger-private-pipeline:
-    name: Trigger Private Pipeline
+    name: Trigger pipeline
     runs-on: ubuntu-latest
     if: startsWith(github.event.pull_request.title, 'Release')
     steps:
