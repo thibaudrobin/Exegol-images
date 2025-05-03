@@ -465,7 +465,7 @@ function package_base() {
     apt-get update
     colorecho "Starting main programs install"
     fapt man git lsb-release pciutils pkg-config zip unzip kmod gnupg2 wget \
-    libffi-dev  zsh asciinema npm gem automake autoconf make cmake time gcc g++ file lsof \
+    libffi-dev zsh asciinema npm gem automake autoconf make cmake time gcc g++ file lsof \
     less x11-apps net-tools vim nano jq iputils-ping iproute2 tidy mlocate libtool \
     dos2unix ftp sshpass telnet nfs-common ncat netcat-traditional socat rdate putty \
     screen p7zip-full p7zip-rar unrar xz-utils xsltproc parallel tree ruby ruby-dev ruby-full bundler \
