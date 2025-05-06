@@ -54,6 +54,8 @@ function install_go() {
     if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
       criticalecho "Temp fix expired. Exiting."
     else
+      # 1.24.1 needed for GoExec
+      asdf install golang 1.24.1
       # 1.23 needed by BloodHound-CE, and sensepost/ruler
       asdf install golang 1.23.0
       # Default GO version: 1.22.2
