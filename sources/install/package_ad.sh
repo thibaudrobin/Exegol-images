@@ -97,7 +97,7 @@ function install_ldapdomaindump() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing ldapdomaindump"
     # Remove --system-site-packages because the ldapdomaindump package conflicts with the base package
-    pipx install git+https://github.com/dirkjanm/ldapdomaindump
+    pipx install --system-site-packages git+https://github.com/dirkjanm/ldapdomaindump
     add-history ldapdomaindump
     add-test-command "ldapdomaindump --help"
     add-to-list "ldapdomaindump,https://github.com/dirkjanm/ldapdomaindump,A tool for dumping domain data from an LDAP service"
@@ -684,7 +684,7 @@ function install_ntlmv1-multi() {
     deactivate
     add-aliases ntlmv1-multi
     add-history ntlmv1-multi
-    add-test-command "ntlmv1-multi.py --ntlmv1 a::a:a:a:a"
+    add-test-command "ntlmv1-multi.py --ntlmv1 SV01$::DOMAIN.LOCAL:AD1235DEAC142CD5FC2D123ADCF51A111ADF45C2345ADCF5:AD1235DEAC142CD5FC2D123ADCF51A111ADF45C2345ADCF5:1122334455667788"
     add-to-list "ntlmv1-multi,https://github.com/evilmog/ntlmv1-multi,Exploit a vulnerability in Microsoft Windows to gain system-level access."
 }
 
@@ -1424,7 +1424,7 @@ function install_sccmwtf() {
 function install_smbclientng() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing smbclient-ng"
-    pipx install git+https://github.com/p0dalirius/smbclient-ng
+    pipx install --system-site-packages git+https://github.com/p0dalirius/smbclient-ng
     add-history smbclient-ng
     add-test-command "smbclientng --help"
     add-to-list "smbclient-ng,https://github.com/p0dalirius/smbclient-ng,smbclient-ng is a fast and user friendly way to interact with SMB shares."
@@ -1441,7 +1441,7 @@ function install_conpass() {
 
 function install_adminer() {
     colorecho "Installing adminer"
-    pipx install git+https://github.com/Mazars-Tech/AD_Miner
+    pipx install --system-site-packages git+https://github.com/Mazars-Tech/AD_Miner
     add-aliases adminer
     add-history adminer
     add-test-command "adminer --help"
