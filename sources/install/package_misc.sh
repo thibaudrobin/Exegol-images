@@ -90,7 +90,14 @@ function install_searchsploit() {
 function install_triliumnext() {
     colorecho "Installing TriliumNext"
     fapt libpng16-16 libpng-dev pkg-config autoconf libtool build-essential nasm libx11-dev libxkbfile-dev
-    git -C /opt/tools/ clone --depth 1 https://github.com/triliumnext/notes.git triliumnext
+    # https://github.com/TriliumNext/Notes/issues/1890
+    local temp_fix_limit="2025-06-01"
+    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
+      criticalecho "Temp fix expired. Exiting."
+    else
+      git -C /opt/tools/ clone --branch v0.93.0 --depth 1 https://github.com/triliumnext/notes.git triliumnext
+    fi
+    #git -C /opt/tools/ clone --depth 1 https://github.com/triliumnext/notes.git triliumnext
     cd /opt/tools/triliumnext || exit
     zsh -c "source ~/.zshrc && nvm use default && npm install"
     mkdir /opt/tools/triliumnext/data
