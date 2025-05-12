@@ -1116,6 +1116,11 @@ function install_pre2k() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing pre2k"
     pipx install --system-site-packages git+https://github.com/garrettfoster13/pre2k
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject pre2k "click~=8.1.8" --force
+    fi
     add-history pre2k
     add-test-command "pre2k --help"
     add-to-list "pre2k,https://github.com/garrettfoster13/pre2k,pre2k is a tool to check if a Windows domain has any pre-2000 Windows 2000 logon names still in use."
@@ -1143,6 +1148,11 @@ function install_roastinthemiddle() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing roastinthemiddle"
     pipx install --system-site-packages git+https://github.com/Tw1sm/RITM
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject ritm "click~=8.1.8" --force
+    fi
     add-history roastinthemiddle
     add-test-command "roastinthemiddle --help"
     add-to-list "roastinthemiddle,https://github.com/Tw1sm/RITM,RoastInTheMiddle is a tool to intercept and relay NTLM authentication requests."
@@ -1244,6 +1254,11 @@ function install_GPOddity() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing GPOddity"
     pipx install --system-site-packages git+https://github.com/synacktiv/GPOddity
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject gpoddity "click~=8.1.8" --force
+    fi
     add-history GPOddity
     add-test-command "gpoddity --help"
     add-to-list "GPOddity,https://github.com/synacktiv/GPOddity,Aiming at automating GPO attack vectors through NTLM relaying (and more)"
@@ -1392,6 +1407,11 @@ function install_sccmhunter() {
     python3 -m venv --system-site-packages ./venv
     source ./venv/bin/activate
     pip3 install -r requirements.txt
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pip3 install click~=8.1.8
+    fi
     deactivate
     add-aliases sccmhunter
     add-history sccmhunter
@@ -1426,6 +1446,11 @@ function install_conpass() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing conpass"
     pipx install --system-site-packages git+https://github.com/login-securite/conpass
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject conpass "click~=8.1.8" --force
+    fi
     add-history conpass
     add-test-command "conpass --help"
     add-to-list "conpass,https://github.com/login-securite/conpass,Python tool for continuous password spraying taking into account the password policy."
