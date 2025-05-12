@@ -215,9 +215,8 @@ function check_temp_fix_expiry() {
     fi
     
     # Check if the current date is past the expiry date
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $expiry_date +%Y%m%d)" ]]; then
-        criticalecho-noexit "Temp fix expired. Exiting."
-        return 1
+    if [[ "$(date +%Y%m%d)" -gt "$(date -d "$expiry_date" +%Y%m%d)" ]]; then
+        criticalecho "Temp fix expired. Exiting."
     fi
     
     # Not expired, apply the fix
