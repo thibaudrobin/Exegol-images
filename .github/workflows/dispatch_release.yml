@@ -8,7 +8,7 @@ on:
 
 jobs:
   trigger-private-pipeline:
-    name: Trigger Private Pipeline
+    name: Trigger pipeline
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Pipeline Repo
