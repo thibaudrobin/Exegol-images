@@ -368,7 +368,7 @@ function install_tls-scanner() {
     fapt maven
     git -C /opt/tools/ clone --depth 1 --recursive --shallow-submodules https://github.com/tls-attacker/TLS-Scanner
     cd /opt/tools/TLS-Scanner || exit
-    mvn clean package -DskipTests=true
+    catch_and_retry mvn clean package -DskipTests=true
     add-aliases tls-scanner
     add-history tls-scanner
     add-test-command "tls-scanner --help"
