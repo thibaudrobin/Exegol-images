@@ -926,9 +926,14 @@ function install_webclientservicescanner() {
 }
 
 function install_certipy() {
-    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Certipy"
-    pipx install --system-site-packages git+https://github.com/ly4k/Certipy
+    git -C /opt/tools/ clone --depth 1 https://github.com/ly4k/Certipy
+    cd /opt/tools/Certipy || exit
+    python3.13 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install .
+    deactivate
+    add-aliases certipy
     add-history certipy
     add-test-command "certipy --version"
     add-to-list "certipy,https://github.com/ly4k/Certipy,Python tool to create and sign certificates"
