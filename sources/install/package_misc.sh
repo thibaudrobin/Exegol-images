@@ -92,9 +92,7 @@ function install_triliumnext() {
     fapt libpng16-16 libpng-dev pkg-config autoconf libtool build-essential nasm libx11-dev libxkbfile-dev
     # https://github.com/TriliumNext/Notes/issues/1890
     local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       git -C /opt/tools/ clone --branch v0.93.0 --depth 1 https://github.com/triliumnext/notes.git triliumnext
     fi
     #git -C /opt/tools/ clone --depth 1 https://github.com/triliumnext/notes.git triliumnext
