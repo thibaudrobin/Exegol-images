@@ -1491,6 +1491,7 @@ function install_powerview() {
     add-history powerview.py
     add-test-command "powerview --help"
     add-to-list "Powerview.py,https://github.com/aniqfakhrul/powerview.py,PowerView.py is an alternative for the awesome original PowerView.ps1 script."
+}
 
 function install_pysnaffler(){
     # CODE-CHECK-WHITELIST=add-aliases
