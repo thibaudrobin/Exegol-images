@@ -1484,6 +1484,14 @@ function install_adminer() {
     add-to-list "AD-miner,https://github.com/Mazars-Tech/AD_Miner,Active Directory audit tool that leverages cypher queries."
 }
 
+function install_powerview() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing powerview.py"
+    pipx install git+https://github.com/aniqfakhrul/powerview.py
+    add-history powerview.py
+    add-test-command "powerview --help"
+    add-to-list "Powerview.py,https://github.com/aniqfakhrul/powerview.py,PowerView.py is an alternative for the awesome original PowerView.ps1 script."
+
 function install_pysnaffler(){
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing pysnaffler"
@@ -1601,6 +1609,7 @@ function package_ad() {
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
+    install_powerview              # Powerview Python implementation 
     install_pysnaffler             # Snaffler, but in Python
     post_install
     end_time=$(date +%s)
