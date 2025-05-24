@@ -213,6 +213,13 @@ function install_wesng() {
     add-to-list "wesng,https://github.com/bitsadmin/wesng,WES-NG is a tool based on the output of Windows's systeminfo utility which provides the list of vulnerabilities the OS is vulnerable to including any exploits for these vulnerabilities."
 }
 
+function install_dtrx() {
+    # CODE-CHECK-WHITELIST=add-aliases,add-history
+    colorecho "Installing dtrx"
+    pipx install --system-site-packages dtrx
+    add-test-command "dtrx --help"
+    add-to-list "dtrx,https://github.com/dtrx-py/dtrx,Do The Right eXtraction - don't remember what set of tar flags or where to pipe the output to extract it? no worries!"
+}
 
 # Package dedicated to offensive miscellaneous tools
 function package_misc() {
@@ -236,6 +243,7 @@ function package_misc() {
     install_creds           # A default credentials vault
     install_uploader        # uploader for fast file upload
     install_wesng           # Search Windows vulnerability via systeminfo
+    install_dtrx            # Intelligent archive extractor
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))
