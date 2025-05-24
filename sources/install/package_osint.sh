@@ -117,18 +117,12 @@ function install_simplyemail() {
 }
 
 function install_theharvester() {
+    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing theHarvester"
-    git -C /opt/tools/ clone --depth 1 https://github.com/laramies/theHarvester
-    cd /opt/tools/theHarvester || exit
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip3 install -r requirements.txt
-    deactivate
+    pipx install --system-site-packages git+https://github.com/laramies/theHarvester
     # The tool needs access to the proxies.yaml file in the folder.
-    ln -s /opt/tools/theHarvester /usr/local/etc/
-    add-aliases theharvester
     add-history theharvester
-    add-test-command "theHarvester.py --help"
+    add-test-command "theHarvester --help"
     add-to-list "theharvester,https://github.com/laramies/theHarvester,Tool for gathering e-mail accounts / subdomain names / virtual host / open ports / banners / and employee names from different public sources"
 }
 

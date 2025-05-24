@@ -38,9 +38,7 @@ function install_metasploit() {
 
     # fixes 'You have already activated timeout 0.2.0, but your Gemfile requires timeout 0.4.1. Since timeout is a default gem, you can either remove your dependency on it or try updating to a newer version of bundler that supports timeout as a default gem.'
     local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       gem install timeout --version 0.4.1
     fi
     rvm use 3.2.2@default
@@ -86,9 +84,7 @@ function install_sliver() {
     # when the pipeline fails because the time limit is reached: update the version and the time limit
     # or check if it's possible to make this dynamic
     local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       # Add branch v1.5.41 due to installation of stable branch
       git -C /opt/tools/ clone --branch v1.5.42 --depth 1 https://github.com/BishopFox/sliver.git
       cd /opt/tools/sliver || exit
