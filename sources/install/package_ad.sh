@@ -848,7 +848,7 @@ function install_manspider() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Manspider"
     fapt tesseract-ocr antiword
-    pipx install git+https://github.com/blacklanternsecurity/MANSPIDER
+    pipx install --system-site-packages git+https://github.com/blacklanternsecurity/MANSPIDER
     add-history manspider
     add-test-command "manspider --help"
     add-to-list "manspider,https://github.com/blacklanternsecurity/MANSPIDER,Manspider will crawl every share on every target system. If provided creds don't work it will fall back to 'guest' then to a null session."
