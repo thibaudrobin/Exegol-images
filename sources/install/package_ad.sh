@@ -836,8 +836,8 @@ function install_pkinittools() {
 }
 
 function install_pywhisker() {
-    colorecho "Installing pyWhisker"
     # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing pyWhisker"
     pipx install --system-site-packages git+https://github.com/ShutdownRepo/pywhisker
     add-history pywhisker
     add-test-command "pywhisker --help"
@@ -845,18 +845,11 @@ function install_pywhisker() {
 }
 
 function install_manspider() {
+    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Manspider"
-    git -C /opt/tools clone --depth 1 https://github.com/blacklanternsecurity/MANSPIDER.git
-    cd /opt/tools/MANSPIDER || exit
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip3 install .
-    deactivate
-    touch ./man_spider/lib/init.py
-    sed -i "s#from .lib import#from lib import##" man_spider/manspider.py
-    add-aliases manspider
+    pipx install --system-site-packages git+https://github.com/blacklanternsecurity/MANSPIDER
     add-history manspider
-    add-test-command "manspider.py --help"
+    add-test-command "manspider --help"
     add-to-list "manspider,https://github.com/blacklanternsecurity/MANSPIDER,Manspider will crawl every share on every target system. If provided creds don't work it will fall back to 'guest' then to a null session."
 }
 
