@@ -163,6 +163,7 @@ function post_install() {
     # Function used to clean up post-install files
     colorecho "Cleaning..."
     updatedb
+    rm -rf /root/.asdf/installs/golang/*/packages/pkg/mod
     rm -rf /root/.bundle/cache
     rm -rf /root/.cache
     rm -rf /root/.cargo/registry
