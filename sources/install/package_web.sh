@@ -911,6 +911,8 @@ function install_bbot() {
     add-history bbot
     add-test-command "bbot --help"
     add-to-list "BBOT,https://github.com/blacklanternsecurity/bbot,BEE·bot is a multipurpose scanner inspired by Spiderfoot built to automate your Recon and ASM."
+}
+
 
 # Package dedicated to applicative and active web pentest tools
 function package_web() {
