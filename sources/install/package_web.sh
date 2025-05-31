@@ -122,7 +122,7 @@ function install_ffuf() {
     local ffuf_url
     ffuf_url=$(curl --location --silent "https://api.github.com/repos/ffuf/ffuf/releases/latest" | grep 'browser_download_url.*ffuf.*linux_'"$arch"'.tar.gz"' | grep -o 'https://[^"]*')
     curl --location -o /tmp/ffuf.tar.gz "$ffuf_url"
-    tar -xf /tmp/ffuf.tar.gz --directory /tmp
+    tar -xf /tmp/ffuf.tar.gz --directory /opt/tools/bin/
     add-history ffuf
     add-test-command "ffuf --help"
     add-to-list "ffuf,https://github.com/ffuf/ffuf,Fast web fuzzer written in Go."
