@@ -2,7 +2,7 @@
 # Author: The Exegol Project
 
 # Functions and commands that will be retried multiple times to counter random network issues when building
-CATCH_AND_RETRY_COMMANDS=("curl" "wget" "apt-fast" "git" "go" "apt-get" "nvm" "npm" "pipx" "pip2" "pip3" "cargo" "gem")
+CATCH_AND_RETRY_COMMANDS=("curl" "wget" "apt-fast" "git" "go" "apt-get" "nvm" "npm" "pip" "pipx" "pip2" "pip3" "cargo" "gem")
 
 export RED='\033[1;31m'
 export BLUE='\033[1;34m'
@@ -163,6 +163,7 @@ function post_install() {
     # Function used to clean up post-install files
     colorecho "Cleaning..."
     updatedb
+    rm -rf /root/.asdf/installs/golang/*/packages/pkg/mod
     rm -rf /root/.bundle/cache
     rm -rf /root/.cache
     rm -rf /root/.cargo/registry
@@ -197,4 +198,28 @@ function post_build() {
     cp /opt/.exegol_history ~/.bash_history
     colorecho "Removing desktop icons"
     if [ -d "/root/Desktop" ]; then rm -r /root/Desktop; fi
+}
+
+function check_temp_fix_expiry() {
+    # This function checks if a temporary fix has expired
+    # Parameters:
+    # $1: expiry date in YYYY-MM-DD format
+    # Returns:
+    # 0 if the fix should be applied (not expired or local build)
+    # 1 if the fix has expired (and not a local build)
+    
+    local expiry_date="$1"
+    
+    # Apply the fix if it's a local build regardless of expiry
+    if [[ "$EXEGOL_BUILD_TYPE" == "local" ]]; then
+        return 0
+    fi
+    
+    # Check if the current date is past the expiry date
+    if [[ "$(date +%Y%m%d)" -gt "$(date -d "$expiry_date" +%Y%m%d)" ]]; then
+        criticalecho "Temp fix expired. Exiting."
+    fi
+    
+    # Not expired, apply the fix
+    return 0
 }

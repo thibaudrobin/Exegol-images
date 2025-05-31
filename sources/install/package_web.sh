@@ -59,9 +59,7 @@ function install_wfuzz() {
     git -C /tmp clone --depth 1 https://github.com/xmendez/wfuzz.git
     # Wait for fix / PR to be merged: https://github.com/xmendez/wfuzz/issues/366
     local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install pycurl  # remove this line and uncomment the first when issue is fix
       sed -i 's/pyparsing>=2.4\*;/pyparsing>=2.4.2;/' /tmp/wfuzz/setup.py
       pip3 install /tmp/wfuzz/
@@ -363,18 +361,6 @@ function install_testssl() {
     add-history testssl
     add-test-command "testssl.sh --help"
     add-to-list "testssl,https://github.com/drwetter/testssl.sh,a tool for testing SSL/TLS encryption on servers"
-}
-
-function install_tls-scanner() {
-    colorecho "Installing TLS-Scanner"
-    fapt maven
-    git -C /opt/tools/ clone --depth 1 --recursive --shallow-submodules https://github.com/tls-attacker/TLS-Scanner
-    cd /opt/tools/TLS-Scanner || exit
-    mvn clean package -DskipTests=true
-    add-aliases tls-scanner
-    add-history tls-scanner
-    add-test-command "tls-scanner --help"
-    add-to-list "tls-scanner,https://github.com/tls-attacker/tls-scanner,a simple script to check the security of a remote TLS/SSL web server"
 }
 
 function install_cloudfail() {
@@ -951,7 +937,6 @@ function package_web() {
     install_cmsmap                  # CMS scanner (Joomla, Wordpress, Drupal)
     install_moodlescan              # Moodle scanner
     install_testssl                 # SSL/TLS scanner
-    install_tls-scanner             # SSL/TLS scanner
     # install_sslyze                # SSL/TLS scanner FIXME: Only AMD ?
     install_cloudfail               # Cloudflare misconfiguration detector
     install_eyewitness              # Website screenshoter

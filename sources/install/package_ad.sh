@@ -194,6 +194,8 @@ function install_bloodhound-ce() {
     git -C "${bloodhoundce_path}" clone --depth 1 --branch "${latestRelease}" "https://github.com/SpecterOps/BloodHound.git" src
     cd "${bloodhoundce_path}/src/" || exit
     catch_and_retry VERSION=v999.999.999 CHECKOUT_HASH="" python3 ./packages/python/beagle/main.py build --verbose --ci
+    # Force remove go and yarn cache that are not stored in standard locations
+    rm -rf "${bloodhoundce_path}/src/cache" "${bloodhoundce_path}/src/.yarn/cache"
 
     ## SharpHound
     local sharphound_url
@@ -233,7 +235,7 @@ function install_bloodhound-ce() {
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_amd64_sha256}"
     [[ -f "${azurehound_path}/${azurehound_amd64_filename}" ]] || exit
     [[ -f "${azurehound_path}/${azurehound_amd64_filename}.sha256" ]] || exit
-    
+
     # Extract filename from URL for ARM64
     local azurehound_arm64_filename
     azurehound_arm64_filename=$(basename "${azurehound_url_arm64}")
@@ -482,10 +484,8 @@ function install_pypykatz() {
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
     local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
-       git -C /opt/tools/ clone --depth 1 https://github.com/skelsec/pypykatz
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      git -C /opt/tools/ clone --depth 1 https://github.com/skelsec/pypykatz
       cd /opt/tools/pypykatz || exit
       python3 -m venv --system-site-packages ./venv
       source ./venv/bin/activate
@@ -726,9 +726,7 @@ function install_pygpoabuse() {
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
     local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
     deactivate
@@ -829,9 +827,7 @@ function install_pkinittools() {
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
     local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
     deactivate
@@ -842,8 +838,8 @@ function install_pkinittools() {
 }
 
 function install_pywhisker() {
-    colorecho "Installing pyWhisker"
     # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing pyWhisker"
     pipx install --system-site-packages git+https://github.com/ShutdownRepo/pywhisker
     add-history pywhisker
     add-test-command "pywhisker --help"
@@ -851,18 +847,11 @@ function install_pywhisker() {
 }
 
 function install_manspider() {
+    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Manspider"
-    git -C /opt/tools clone --depth 1 https://github.com/blacklanternsecurity/MANSPIDER.git
-    cd /opt/tools/MANSPIDER || exit
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip3 install .
-    deactivate
-    touch ./man_spider/lib/init.py
-    sed -i "s#from .lib import#from lib import##" man_spider/manspider.py
-    add-aliases manspider
+    pipx install --system-site-packages git+https://github.com/blacklanternsecurity/MANSPIDER
     add-history manspider
-    add-test-command "manspider.py --help"
+    add-test-command "manspider --help"
     add-to-list "manspider,https://github.com/blacklanternsecurity/MANSPIDER,Manspider will crawl every share on every target system. If provided creds don't work it will fall back to 'guest' then to a null session."
 }
 
@@ -932,9 +921,14 @@ function install_webclientservicescanner() {
 }
 
 function install_certipy() {
-    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Certipy"
-    pipx install --system-site-packages git+https://github.com/ly4k/Certipy
+    git -C /opt/tools/ clone --depth 1 https://github.com/ly4k/Certipy
+    cd /opt/tools/Certipy || exit
+    python3.13 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install .
+    deactivate
+    add-aliases certipy
     add-history certipy
     add-test-command "certipy --version"
     add-to-list "certipy,https://github.com/ly4k/Certipy,Python tool to create and sign certificates"
@@ -1006,9 +1000,7 @@ function install_ldaprelayscan() {
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
     local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
     deactivate
@@ -1124,6 +1116,11 @@ function install_pre2k() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing pre2k"
     pipx install --system-site-packages git+https://github.com/garrettfoster13/pre2k
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject pre2k "click~=8.1.8" --force
+    fi
     add-history pre2k
     add-test-command "pre2k --help"
     add-to-list "pre2k,https://github.com/garrettfoster13/pre2k,pre2k is a tool to check if a Windows domain has any pre-2000 Windows 2000 logon names still in use."
@@ -1151,6 +1148,11 @@ function install_roastinthemiddle() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing roastinthemiddle"
     pipx install --system-site-packages git+https://github.com/Tw1sm/RITM
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject ritm "click~=8.1.8" --force
+    fi
     add-history roastinthemiddle
     add-test-command "roastinthemiddle --help"
     add-to-list "roastinthemiddle,https://github.com/Tw1sm/RITM,RoastInTheMiddle is a tool to intercept and relay NTLM authentication requests."
@@ -1252,6 +1254,11 @@ function install_GPOddity() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing GPOddity"
     pipx install --system-site-packages git+https://github.com/synacktiv/GPOddity
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject gpoddity "click~=8.1.8" --force
+    fi
     add-history GPOddity
     add-test-command "gpoddity --help"
     add-to-list "GPOddity,https://github.com/synacktiv/GPOddity,Aiming at automating GPO attack vectors through NTLM relaying (and more)"
@@ -1400,11 +1407,30 @@ function install_sccmhunter() {
     python3 -m venv --system-site-packages ./venv
     source ./venv/bin/activate
     pip3 install -r requirements.txt
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pip3 install click~=8.1.8
+    fi
     deactivate
     add-aliases sccmhunter
     add-history sccmhunter
     add-test-command "sccmhunter.py --help"
     add-to-list "sccmhunter,https://github.com/garrettfoster13/sccmhunter,SCCMHunter is a post-ex tool built to streamline identifying profiling and attacking SCCM related assets in an Active Directory domain."
+}
+
+function install_sccmsecrets() {
+    colorecho "Installing SCCMSecrets"
+    git -C /opt/tools/ clone --depth 1 https://github.com/synacktiv/SCCMSecrets
+    cd /opt/tools/SCCMSecrets || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install -r requirements.txt
+    deactivate
+    add-aliases sccmsecrets
+    add-history sccmsecrets
+    add-test-command "sccmsecrets.py policies --help"
+    add-to-list "sccmsecrets,https://github.com/synacktiv/SCCMSecrets,SCCMSecrets.py aims at exploiting SCCM policies distribution for credentials harvesting and initial access and lateral movement."
 }
 
 function install_sccmwtf() {
@@ -1434,6 +1460,11 @@ function install_conpass() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing conpass"
     pipx install --system-site-packages git+https://github.com/login-securite/conpass
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-06-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject conpass "click~=8.1.8" --force
+    fi
     add-history conpass
     add-test-command "conpass --help"
     add-to-list "conpass,https://github.com/login-securite/conpass,Python tool for continuous password spraying taking into account the password policy."
@@ -1456,6 +1487,24 @@ function install_godap() {
     add-history godap
     add-test-command "godap --help"
     add-to-list "godap,https://github.com/Macmod/godap,A complete TUI for LDAP."
+}
+
+function install_powerview() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing powerview.py"
+    pipx install git+https://github.com/aniqfakhrul/powerview.py
+    add-history powerview.py
+    add-test-command "powerview --help"
+    add-to-list "Powerview.py,https://github.com/aniqfakhrul/powerview.py,PowerView.py is an alternative for the awesome original PowerView.ps1 script."
+}
+
+function install_pysnaffler(){
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing pysnaffler"
+    pipx install --system-site-packages git+https://github.com/skelsec/pysnaffler
+    add-history pysnaffler
+    add-test-command "pysnaffler --help"
+    add-to-list "pysnaffler,https://github.com/skelsec/pysnaffler,Snaffler. But in python."
 }
 
 # Package dedicated to internal Active Directory tools
@@ -1561,11 +1610,14 @@ function package_ad() {
     install_dploot                 # Python rewrite of SharpDPAPI written un C#.
     # install_PXEThief             # TODO: pywin32 not found - PXEThief is a toolset designed to exploit vulnerabilities in Microsoft Endpoint Configuration Manager's OS Deployment, enabling credential theft from network and task sequence accounts.
     install_sccmhunter             # SCCMHunter is a post-ex tool built to streamline identifying, profiling, and attacking SCCM related assets in an Active Directory domain.
+    install_sccmsecrets
     install_sccmwtf                # This code is designed for exploring SCCM in a lab.
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
-    install_godap
+    install_godap                  # A complete terminal user interface (TUI) for LDAP
+    install_powerview              # Powerview Python implementation 
+    install_pysnaffler             # Snaffler, but in Python
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))
