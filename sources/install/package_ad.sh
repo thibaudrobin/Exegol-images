@@ -847,7 +847,6 @@ function install_pywhisker() {
 function install_manspider() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Manspider"
-    fapt tesseract-ocr antiword
     pipx install --system-site-packages git+https://github.com/blacklanternsecurity/MANSPIDER
     add-history manspider
     add-test-command "manspider --help"
