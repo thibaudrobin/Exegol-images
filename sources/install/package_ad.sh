@@ -1479,6 +1479,20 @@ function install_adminer() {
     add-to-list "AD-miner,https://github.com/Mazars-Tech/AD_Miner,Active Directory audit tool that leverages cypher queries."
 }
 
+function install_remotemonologue() {
+    colorecho "Installing RemoteMonologue"
+    git -C /opt/tools/ clone --depth 1 https://github.com/3lp4tr0n/RemoteMonologue
+    cd /opt/tools/RemoteMonologue || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install impacket
+    deactivate
+    add-aliases remotemonologue
+    add-history remotemonologue
+    add-test-command "remotemonologue.py --help"
+    add-to-list "RemoteMonologue,https://github.com/3lp4tr0n/RemoteMonologue,A tool to coerce NTLM authentications via DCOM"
+}
+
 function install_godap() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing godap"
@@ -1615,6 +1629,7 @@ function package_ad() {
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
+    install_remotemonologue        # A tool to coerce NTLM authentications via DCOM
     install_godap                  # A complete terminal user interface (TUI) for LDAP
     install_powerview              # Powerview Python implementation 
     install_pysnaffler             # Snaffler, but in Python
