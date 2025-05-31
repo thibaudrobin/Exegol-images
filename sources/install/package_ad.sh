@@ -194,6 +194,8 @@ function install_bloodhound-ce() {
     git -C "${bloodhoundce_path}" clone --depth 1 --branch "${latestRelease}" "https://github.com/SpecterOps/BloodHound.git" src
     cd "${bloodhoundce_path}/src/" || exit
     catch_and_retry VERSION=v999.999.999 CHECKOUT_HASH="" python3 ./packages/python/beagle/main.py build --verbose --ci
+    # Force remove go and yarn cache that are not stored in standard locations
+    rm -rf "${bloodhoundce_path}/src/cache" "${bloodhoundce_path}/src/.yarn/cache"
 
     ## SharpHound
     local sharphound_url
@@ -836,8 +838,8 @@ function install_pkinittools() {
 }
 
 function install_pywhisker() {
-    colorecho "Installing pyWhisker"
     # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing pyWhisker"
     pipx install --system-site-packages git+https://github.com/ShutdownRepo/pywhisker
     add-history pywhisker
     add-test-command "pywhisker --help"
@@ -845,18 +847,11 @@ function install_pywhisker() {
 }
 
 function install_manspider() {
+    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Manspider"
-    git -C /opt/tools clone --depth 1 https://github.com/blacklanternsecurity/MANSPIDER.git
-    cd /opt/tools/MANSPIDER || exit
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip3 install .
-    deactivate
-    touch ./man_spider/lib/init.py
-    sed -i "s#from .lib import#from lib import##" man_spider/manspider.py
-    add-aliases manspider
+    pipx install --system-site-packages git+https://github.com/blacklanternsecurity/MANSPIDER
     add-history manspider
-    add-test-command "manspider.py --help"
+    add-test-command "manspider --help"
     add-to-list "manspider,https://github.com/blacklanternsecurity/MANSPIDER,Manspider will crawl every share on every target system. If provided creds don't work it will fall back to 'guest' then to a null session."
 }
 
@@ -1484,6 +1479,30 @@ function install_adminer() {
     add-to-list "AD-miner,https://github.com/Mazars-Tech/AD_Miner,Active Directory audit tool that leverages cypher queries."
 }
 
+function install_remotemonologue() {
+    colorecho "Installing RemoteMonologue"
+    git -C /opt/tools/ clone --depth 1 https://github.com/3lp4tr0n/RemoteMonologue
+    cd /opt/tools/RemoteMonologue || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install impacket
+    deactivate
+    add-aliases remotemonologue
+    add-history remotemonologue
+    add-test-command "remotemonologue.py --help"
+    add-to-list "RemoteMonologue,https://github.com/3lp4tr0n/RemoteMonologue,A tool to coerce NTLM authentications via DCOM"
+}
+
+function install_godap() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing godap"
+    go install -v github.com/Macmod/godap@latest
+    asdf reshim golang
+    add-history godap
+    add-test-command "godap --help"
+    add-to-list "godap,https://github.com/Macmod/godap,A complete TUI for LDAP."
+}
+
 function install_powerview() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing powerview.py"
@@ -1610,6 +1629,8 @@ function package_ad() {
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
+    install_remotemonologue        # A tool to coerce NTLM authentications via DCOM
+    install_godap                  # A complete terminal user interface (TUI) for LDAP
     install_powerview              # Powerview Python implementation 
     install_pysnaffler             # Snaffler, but in Python
     post_install

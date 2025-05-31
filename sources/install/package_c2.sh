@@ -129,7 +129,8 @@ function install_empire() {
 
 function install_havoc() {
     colorecho "Installing Havoc"
-    git -C /opt/tools/ clone --depth 1 https://github.com/HavocFramework/Havoc
+    git -C /opt/tools/ clone --depth 1 --recursive --shallow-submodules https://github.com/HavocFramework/Havoc
+    cd /opt/tools/Havoc || exit
     # https://github.com/HavocFramework/Havoc/issues/516 (seems fixed but keeping commented tempfix just in case)
     #    local temp_fix_limit="YYYY-MM-DD"
     #    if [ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]; then
@@ -140,16 +141,19 @@ function install_havoc() {
     #      go mod download golang.org/x/sys
     #      go mod download github.com/ugorji/go
     #    fi
+
     # Building Team Server
-    cd /opt/tools/Havoc/teamserver || exit
-    cd /opt/tools/Havoc || exit
     sed -i 's/golang-go//' teamserver/Install.sh
     make ts-build
     # ln -v -s /opt/tools/Havoc/havoc /opt/tools/bin/havoc
     # Symbolic link above not needed because Havoc relies on absolute links, the user needs be changed directory when running havoc
+
     # Building Client
     fapt qtmultimedia5-dev libqt5websockets5-dev
     make client-build || cat /opt/tools/Havoc/client/Build/CMakeFiles/CMakeOutput.log
+    # `make clean` removes binaries, so we could just manually remove the Build directory
+    rm -rf /opt/tools/Havoc/client/Build/
+
     add-aliases havoc
     add-history havoc
     add-test-command "havoc "
