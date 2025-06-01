@@ -184,6 +184,7 @@ function install_rvm() {
     rvm install ruby-3.1.2  # needed by cewl, pass-station, evil-winrm
     rvm install ruby-3.1.5  # needed metasploit-framework
     rvm get head
+    rvm cleanup all
     gem update
     add-test-command "rvm --version"
 }
