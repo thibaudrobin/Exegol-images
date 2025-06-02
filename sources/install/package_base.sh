@@ -308,8 +308,7 @@ function install_gf() {
       # adding new-line
       echo ''
       echo '# Enable gf autocompletion'
-      # FIXME GOPATH not set
-      cat "$GOPATH"/pkg/mod/github.com/tomnomnom/gf@*/gf-completion.zsh
+      cat "$(sh -c "go env GOPATH")"/pkg/mod/github.com/tomnomnom/gf@*/gf-completion.zsh
     } >> ~/.zshrc
     cp -r "$(sh -c "go env GOPATH")"/pkg/mod/github.com/tomnomnom/gf@*/examples ~/.gf
     # Add patterns from 1ndianl33t
