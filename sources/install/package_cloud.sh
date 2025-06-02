@@ -152,6 +152,7 @@ function package_cloud() {
     local end_time
     start_time=$(date +%s)
     install_kubectl
+    install_k9s
     install_awscli
     install_scout           # Multi-Cloud Security Auditing Tool
     install_cloudsplaining
