@@ -50,7 +50,7 @@ function install_go() {
     #asdf install golang latest
     #asdf set --home golang latest
     # With golang 1.23 many package build are broken, temp fix to use 1.22.2 as golang latest
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       # 1.23 needed by BloodHound-CE, and sensepost/ruler
       asdf install golang 1.23.0
@@ -308,8 +308,7 @@ function install_gf() {
       # adding new-line
       echo ''
       echo '# Enable gf autocompletion'
-      # FIXME GOPATH not set
-      cat "$GOPATH"/pkg/mod/github.com/tomnomnom/gf@*/gf-completion.zsh
+      cat "$(sh -c "go env GOPATH")"/pkg/mod/github.com/tomnomnom/gf@*/gf-completion.zsh
     } >> ~/.zshrc
     cp -r "$(sh -c "go env GOPATH")"/pkg/mod/github.com/tomnomnom/gf@*/examples ~/.gf
     # Add patterns from 1ndianl33t
