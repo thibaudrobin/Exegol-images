@@ -97,7 +97,7 @@ function install_ldapdomaindump() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing ldapdomaindump"
     # Remove --system-site-packages because the ldapdomaindump package conflicts with the base package
-    pipx install git+https://github.com/dirkjanm/ldapdomaindump
+    pipx install --system-site-packages git+https://github.com/dirkjanm/ldapdomaindump
     add-history ldapdomaindump
     add-test-command "ldapdomaindump --help"
     add-to-list "ldapdomaindump,https://github.com/dirkjanm/ldapdomaindump,A tool for dumping domain data from an LDAP service"
@@ -194,18 +194,23 @@ function install_bloodhound-ce() {
     git -C "${bloodhoundce_path}" clone --depth 1 --branch "${latestRelease}" "https://github.com/SpecterOps/BloodHound.git" src
     cd "${bloodhoundce_path}/src/" || exit
     catch_and_retry VERSION=v999.999.999 CHECKOUT_HASH="" python3 ./packages/python/beagle/main.py build --verbose --ci
+    # Force remove go and yarn cache that are not stored in standard locations
+    rm -rf "${bloodhoundce_path}/src/cache" "${bloodhoundce_path}/src/.yarn/cache"
 
     ## SharpHound
     local sharphound_url
     local sharphound_name
     local sharphound_name_lowercase
     curl --location --silent "https://api.github.com/repos/BloodHoundAD/SharpHound/releases/latest" -o "${curl_tempfile}"
-    sharphound_url=$(jq --raw-output '.assets[].browser_download_url | select(contains("debug") | not)' "${curl_tempfile}")
-    sharphound_name=$(jq --raw-output '.assets[].name | select(contains("debug") | not)' "${curl_tempfile}")
+    sharphound_url=$(jq --raw-output '.assets[].browser_download_url | select(contains("debug") | not) | select(contains("sha256") | not)' "${curl_tempfile}")
+    sharphound_name=$(jq --raw-output '.assets[].name | select(contains("debug") | not) | select(contains("sha256") | not)' "${curl_tempfile}")
     # lowercase fix: https://github.com/ThePorgs/Exegol-images/pull/405
-    sharphound_name_lowercase=$(jq --raw-output '.assets[].name | ascii_downcase | select(contains("debug") | not)' "${curl_tempfile}")
+    sharphound_name_lowercase=$(jq --raw-output '.assets[].name | ascii_downcase | select(contains("debug") | not) | select(contains("sha256") | not)' "${curl_tempfile}")
     wget --directory-prefix "${sharphound_path}" "${sharphound_url}"
-    [[ -f "${sharphound_path}/${sharphound_name}" ]] || exit
+    if [[ ! -f "${sharphound_path}/${sharphound_name}" ]]; then
+        echo "Error: SharpHound file '${sharphound_name}' was not downloaded successfully to '${sharphound_path}'."
+        exit 1
+    fi
     mv "${sharphound_path}/${sharphound_name}" "${sharphound_path}/${sharphound_name_lowercase}"
     # Unlike Azurehound, upstream does not provide a sha256 file to check the integrity
     sha256sum "${sharphound_path}/${sharphound_name_lowercase}" > "${sharphound_path}/${sharphound_name_lowercase}.sha256"
@@ -218,19 +223,26 @@ function install_bloodhound-ce() {
     local azurehound_version
     curl --location --silent "https://api.github.com/repos/BloodHoundAD/AzureHound/releases/latest" -o "${curl_tempfile}"
     azurehound_version=$(jq --raw-output '.tag_name' "${curl_tempfile}")
-    azurehound_url_amd64=$(jq --raw-output '.assets[].browser_download_url | select (endswith("azurehound-linux-amd64.zip"))' "${curl_tempfile}")
-    azurehound_url_amd64_sha256=$(jq --raw-output '.assets[].browser_download_url | select (endswith("azurehound-linux-amd64.zip.sha256"))' "${curl_tempfile}")
-    azurehound_url_arm64=$(jq --raw-output '.assets[].browser_download_url | select (endswith("azurehound-linux-arm64.zip"))' "${curl_tempfile}")
-    azurehound_url_arm64_sha256=$(jq --raw-output '.assets[].browser_download_url | select (endswith("azurehound-linux-arm64.zip.sha256"))' "${curl_tempfile}")
+    azurehound_url_amd64=$(jq --raw-output '.assets[].browser_download_url | select (endswith("_linux_amd64.zip"))' "${curl_tempfile}")
+    azurehound_url_amd64_sha256=$(jq --raw-output '.assets[].browser_download_url | select (endswith("_linux_amd64.zip.sha256"))' "${curl_tempfile}")
+    azurehound_url_arm64=$(jq --raw-output '.assets[].browser_download_url | select (endswith("_linux_arm64.zip"))' "${curl_tempfile}")
+    azurehound_url_arm64_sha256=$(jq --raw-output '.assets[].browser_download_url | select (endswith("_linux_arm64.zip.sha256"))' "${curl_tempfile}")
     rm "${curl_tempfile}"
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_amd64}"
-    [[ -f "${azurehound_path}/azurehound-linux-amd64.zip" ]] || exit
+    # Extract filename from URL for AMD64
+    local azurehound_amd64_filename
+    azurehound_amd64_filename=$(basename "${azurehound_url_amd64}")
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_amd64_sha256}"
-    [[ -f "${azurehound_path}/azurehound-linux-amd64.zip.sha256" ]] || exit
+    [[ -f "${azurehound_path}/${azurehound_amd64_filename}" ]] || exit
+    [[ -f "${azurehound_path}/${azurehound_amd64_filename}.sha256" ]] || exit
+
+    # Extract filename from URL for ARM64
+    local azurehound_arm64_filename
+    azurehound_arm64_filename=$(basename "${azurehound_url_arm64}")
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_arm64}"
-    [[ -f "${azurehound_path}/azurehound-linux-arm64.zip" ]] || exit
     wget --directory-prefix "${azurehound_path}" "${azurehound_url_arm64_sha256}"
-    [[ -f "${azurehound_path}/azurehound-linux-arm64.zip.sha256" ]] || exit
+    [[ -f "${azurehound_path}/${azurehound_arm64_filename}" ]] || exit
+    [[ -f "${azurehound_path}/${azurehound_arm64_filename}.sha256" ]] || exit
     (cd "${azurehound_path}"; sha256sum --check --warn ./*.sha256) || exit
     7z a -tzip -mx9 "${azurehound_path}/azurehound-${azurehound_version}.zip" "${azurehound_path}/azurehound-*"
     # Upstream does not provide a sha256 file for the archive to check the integrity
@@ -284,7 +296,8 @@ function install_aclpwn() {
 function install_impacket() {
     colorecho "Installing Impacket scripts"
     pipx install --system-site-packages git+https://github.com/ThePorgs/impacket
-    pipx inject impacket chardet
+    # Pycryptodome because: https://github.com/fortra/impacket/issues/1634
+    pipx inject impacket chardet pycryptodome
     cp -v /root/sources/assets/grc/conf.ntlmrelayx /usr/share/grc/conf.ntlmrelayx
     cp -v /root/sources/assets/grc/conf.secretsdump /usr/share/grc/conf.secretsdump
     cp -v /root/sources/assets/grc/conf.getgpppassword /usr/share/grc/conf.getgpppassword
@@ -470,11 +483,9 @@ function install_pypykatz() {
     colorecho "Installing pypykatz"
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-04-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
-       git -C /opt/tools/ clone --depth 1 https://github.com/skelsec/pypykatz
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      git -C /opt/tools/ clone --depth 1 https://github.com/skelsec/pypykatz
       cd /opt/tools/pypykatz || exit
       python3 -m venv --system-site-packages ./venv
       source ./venv/bin/activate
@@ -673,7 +684,7 @@ function install_ntlmv1-multi() {
     deactivate
     add-aliases ntlmv1-multi
     add-history ntlmv1-multi
-    add-test-command "ntlmv1-multi.py --ntlmv1 a::a:a:a:a"
+    add-test-command "ntlmv1-multi.py --ntlmv1 SV01$::DOMAIN.LOCAL:AD1235DEAC142CD5FC2D123ADCF51A111ADF45C2345ADCF5:AD1235DEAC142CD5FC2D123ADCF51A111ADF45C2345ADCF5:1122334455667788"
     add-to-list "ntlmv1-multi,https://github.com/evilmog/ntlmv1-multi,Exploit a vulnerability in Microsoft Windows to gain system-level access."
 }
 
@@ -714,10 +725,8 @@ function install_pygpoabuse() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-04-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
     deactivate
@@ -817,10 +826,8 @@ function install_pkinittools() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-04-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
     deactivate
@@ -831,8 +838,8 @@ function install_pkinittools() {
 }
 
 function install_pywhisker() {
-    colorecho "Installing pyWhisker"
     # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing pyWhisker"
     pipx install --system-site-packages git+https://github.com/ShutdownRepo/pywhisker
     add-history pywhisker
     add-test-command "pywhisker --help"
@@ -840,19 +847,19 @@ function install_pywhisker() {
 }
 
 function install_manspider() {
+    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Manspider"
-    git -C /opt/tools clone --depth 1 https://github.com/blacklanternsecurity/MANSPIDER.git
-    cd /opt/tools/MANSPIDER || exit
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip3 install .
-    deactivate
-    touch ./man_spider/lib/init.py
-    sed -i "s#from .lib import#from lib import##" man_spider/manspider.py
-    add-aliases manspider
-    add-history manspider
-    add-test-command "manspider.py --help"
-    add-to-list "manspider,https://github.com/blacklanternsecurity/MANSPIDER,Manspider will crawl every share on every target system. If provided creds don't work it will fall back to 'guest' then to a null session."
+    if [[ $(uname -m) = 'x86_64' ]]
+    then
+        pipx install --system-site-packages git+https://github.com/blacklanternsecurity/MANSPIDER
+        add-history manspider
+        add-test-command "manspider --help"
+        add-to-list "manspider,https://github.com/blacklanternsecurity/MANSPIDER,Manspider will crawl every share on every target system. If provided creds don't work it will fall back to 'guest' then to a null session."
+    else
+        # https://github.com/blacklanternsecurity/MANSPIDER/issues/55
+        criticalecho-noexit "This installation function doesn't support architecture $(uname -m)" && return
+    fi
+    
 }
 
 function install_targetedKerberoast() {
@@ -921,9 +928,14 @@ function install_webclientservicescanner() {
 }
 
 function install_certipy() {
-    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Certipy"
-    pipx install --system-site-packages git+https://github.com/ly4k/Certipy
+    git -C /opt/tools/ clone --depth 1 https://github.com/ly4k/Certipy
+    cd /opt/tools/Certipy || exit
+    python3.13 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install .
+    deactivate
+    add-aliases certipy
     add-history certipy
     add-test-command "certipy --version"
     add-to-list "certipy,https://github.com/ly4k/Certipy,Python tool to create and sign certificates"
@@ -994,10 +1006,8 @@ function install_ldaprelayscan() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-04-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
     deactivate
@@ -1113,6 +1123,11 @@ function install_pre2k() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing pre2k"
     pipx install --system-site-packages git+https://github.com/garrettfoster13/pre2k
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject pre2k "click~=8.1.8" --force
+    fi
     add-history pre2k
     add-test-command "pre2k --help"
     add-to-list "pre2k,https://github.com/garrettfoster13/pre2k,pre2k is a tool to check if a Windows domain has any pre-2000 Windows 2000 logon names still in use."
@@ -1140,6 +1155,11 @@ function install_roastinthemiddle() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing roastinthemiddle"
     pipx install --system-site-packages git+https://github.com/Tw1sm/RITM
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject ritm "click~=8.1.8" --force
+    fi
     add-history roastinthemiddle
     add-test-command "roastinthemiddle --help"
     add-to-list "roastinthemiddle,https://github.com/Tw1sm/RITM,RoastInTheMiddle is a tool to intercept and relay NTLM authentication requests."
@@ -1241,6 +1261,11 @@ function install_GPOddity() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing GPOddity"
     pipx install --system-site-packages git+https://github.com/synacktiv/GPOddity
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject gpoddity "click~=8.1.8" --force
+    fi
     add-history GPOddity
     add-test-command "gpoddity --help"
     add-to-list "GPOddity,https://github.com/synacktiv/GPOddity,Aiming at automating GPO attack vectors through NTLM relaying (and more)"
@@ -1389,11 +1414,30 @@ function install_sccmhunter() {
     python3 -m venv --system-site-packages ./venv
     source ./venv/bin/activate
     pip3 install -r requirements.txt
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pip3 install click~=8.1.8
+    fi
     deactivate
     add-aliases sccmhunter
     add-history sccmhunter
     add-test-command "sccmhunter.py --help"
     add-to-list "sccmhunter,https://github.com/garrettfoster13/sccmhunter,SCCMHunter is a post-ex tool built to streamline identifying profiling and attacking SCCM related assets in an Active Directory domain."
+}
+
+function install_sccmsecrets() {
+    colorecho "Installing SCCMSecrets"
+    git -C /opt/tools/ clone --depth 1 https://github.com/synacktiv/SCCMSecrets
+    cd /opt/tools/SCCMSecrets || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install -r requirements.txt
+    deactivate
+    add-aliases sccmsecrets
+    add-history sccmsecrets
+    add-test-command "sccmsecrets.py policies --help"
+    add-to-list "sccmsecrets,https://github.com/synacktiv/SCCMSecrets,SCCMSecrets.py aims at exploiting SCCM policies distribution for credentials harvesting and initial access and lateral movement."
 }
 
 function install_sccmwtf() {
@@ -1413,7 +1457,7 @@ function install_sccmwtf() {
 function install_smbclientng() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing smbclient-ng"
-    pipx install git+https://github.com/p0dalirius/smbclient-ng
+    pipx install --system-site-packages git+https://github.com/p0dalirius/smbclient-ng
     add-history smbclient-ng
     add-test-command "smbclientng --help"
     add-to-list "smbclient-ng,https://github.com/p0dalirius/smbclient-ng,smbclient-ng is a fast and user friendly way to interact with SMB shares."
@@ -1423,6 +1467,11 @@ function install_conpass() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing conpass"
     pipx install --system-site-packages git+https://github.com/login-securite/conpass
+    # https://github.com/fastapi/typer/discussions/1215
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      pipx inject conpass "click~=8.1.8" --force
+    fi
     add-history conpass
     add-test-command "conpass --help"
     add-to-list "conpass,https://github.com/login-securite/conpass,Python tool for continuous password spraying taking into account the password policy."
@@ -1430,11 +1479,53 @@ function install_conpass() {
 
 function install_adminer() {
     colorecho "Installing adminer"
-    pipx install git+https://github.com/Mazars-Tech/AD_Miner
+    pipx install --system-site-packages git+https://github.com/Mazars-Tech/AD_Miner
     add-aliases adminer
     add-history adminer
     add-test-command "adminer --help"
     add-to-list "AD-miner,https://github.com/Mazars-Tech/AD_Miner,Active Directory audit tool that leverages cypher queries."
+}
+
+function install_remotemonologue() {
+    colorecho "Installing RemoteMonologue"
+    git -C /opt/tools/ clone --depth 1 https://github.com/3lp4tr0n/RemoteMonologue
+    cd /opt/tools/RemoteMonologue || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install impacket
+    deactivate
+    add-aliases remotemonologue
+    add-history remotemonologue
+    add-test-command "remotemonologue.py --help"
+    add-to-list "RemoteMonologue,https://github.com/3lp4tr0n/RemoteMonologue,A tool to coerce NTLM authentications via DCOM"
+}
+
+function install_godap() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing godap"
+    go install -v github.com/Macmod/godap@latest
+    asdf reshim golang
+    add-history godap
+    add-test-command "godap --help"
+    add-to-list "godap,https://github.com/Macmod/godap,A complete TUI for LDAP."
+}
+
+function install_powerview() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing powerview.py"
+    pipx install git+https://github.com/aniqfakhrul/powerview.py
+    add-history powerview.py
+    add-test-command "powerview --help"
+    add-to-list "Powerview.py,https://github.com/aniqfakhrul/powerview.py,PowerView.py is an alternative for the awesome original PowerView.ps1 script."
+}
+
+function install_pysnaffler(){
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing pysnaffler"
+    pipx install --system-site-packages git+https://github.com/skelsec/pysnaffler
+    add-history pysnaffler
+    add-test-command "pysnaffler --help"
+    add-to-list "pysnaffler,https://github.com/skelsec/pysnaffler,Snaffler. But in python."
 }
 
 # Package dedicated to internal Active Directory tools
@@ -1540,10 +1631,15 @@ function package_ad() {
     install_dploot                 # Python rewrite of SharpDPAPI written un C#.
     # install_PXEThief             # TODO: pywin32 not found - PXEThief is a toolset designed to exploit vulnerabilities in Microsoft Endpoint Configuration Manager's OS Deployment, enabling credential theft from network and task sequence accounts.
     install_sccmhunter             # SCCMHunter is a post-ex tool built to streamline identifying, profiling, and attacking SCCM related assets in an Active Directory domain.
+    install_sccmsecrets
     install_sccmwtf                # This code is designed for exploring SCCM in a lab.
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
+    install_remotemonologue        # A tool to coerce NTLM authentications via DCOM
+    install_godap                  # A complete terminal user interface (TUI) for LDAP
+    install_powerview              # Powerview Python implementation 
+    install_pysnaffler             # Snaffler, but in Python
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))

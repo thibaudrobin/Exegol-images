@@ -14,6 +14,9 @@ LABEL org.exegol.build_date="${BUILD_DATE}"
 LABEL org.exegol.app="Exegol"
 LABEL org.exegol.src_repository="https://github.com/ThePorgs/Exegol-images"
 
+# Set the build type environment variable to bypass temp fix expiry check when building locally
+ENV EXEGOL_BUILD_TYPE="${VERSION}"
+
 COPY sources /root/sources/
 
 WORKDIR /root/sources/install

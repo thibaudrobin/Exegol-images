@@ -35,8 +35,8 @@ function install_rust_cargo() {
 
 function filesystem() {
     colorecho "Preparing filesystem"
-    mkdir -p /opt/tools/bin/ /data/ /var/log/exegol /.exegol/build_pipeline_tests/ /opt/rules/ /opt/lists
-    touch /.exegol/build_pipeline_tests/all_commands.txt
+    mkdir -p /opt/tools/bin/ /data/ /var/log/exegol /.exegol/ /opt/rules/ /opt/lists
+    touch /.exegol/unit_tests_all_commands.txt
     touch /.exegol/installed_tools.csv
     echo "Tool,Link,Description" >> /.exegol/installed_tools.csv
 }
@@ -50,10 +50,8 @@ function install_go() {
     #asdf install golang latest
     #asdf set --home golang latest
     # With golang 1.23 many package build are broken, temp fix to use 1.22.2 as golang latest
-    local temp_fix_limit="2025-06-01"
-    if [[ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]]; then
-      criticalecho "Temp fix expired. Exiting."
-    else
+    local temp_fix_limit="2025-07-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
       # 1.23 needed by BloodHound-CE, and sensepost/ruler
       asdf install golang 1.23.0
       # Default GO version: 1.22.2
@@ -186,6 +184,7 @@ function install_rvm() {
     rvm install ruby-3.1.2  # needed by cewl, pass-station, evil-winrm
     rvm install ruby-3.1.5  # needed metasploit-framework
     rvm get head
+    rvm cleanup all
     gem update
     add-test-command "rvm --version"
 }
@@ -309,9 +308,7 @@ function install_gf() {
       # adding new-line
       echo ''
       echo '# Enable gf autocompletion'
-      # FIXME GOPATH not set
-      # shellcheck disable=SC2016
-      echo 'source "$GOPATH"/pkg/mod/github.com/tomnomnom/gf@*/gf-completion.zsh'
+      cat "$(sh -c "go env GOPATH")"/pkg/mod/github.com/tomnomnom/gf@*/gf-completion.zsh
     } >> ~/.zshrc
     cp -r "$(sh -c "go env GOPATH")"/pkg/mod/github.com/tomnomnom/gf@*/examples ~/.gf
     # Add patterns from 1ndianl33t
@@ -465,7 +462,7 @@ function package_base() {
     apt-get update
     colorecho "Starting main programs install"
     fapt man git lsb-release pciutils pkg-config zip unzip kmod gnupg2 wget \
-    libffi-dev  zsh asciinema npm gem automake autoconf make cmake time gcc g++ file lsof \
+    libffi-dev zsh asciinema npm gem automake autoconf make cmake time gcc g++ file lsof \
     less x11-apps net-tools vim nano jq iputils-ping iproute2 tidy mlocate libtool \
     dos2unix ftp sshpass telnet nfs-common ncat netcat-traditional socat rdate putty \
     screen p7zip-full p7zip-rar unrar xz-utils xsltproc parallel tree ruby ruby-dev ruby-full bundler \
@@ -499,6 +496,7 @@ function package_base() {
     # change default shell
     chsh -s /bin/zsh
 
+    add-history sshpass
     add-history dnsutils
     add-history samba
     add-history ssh

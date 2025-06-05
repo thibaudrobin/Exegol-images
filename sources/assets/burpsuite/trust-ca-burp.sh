@@ -66,11 +66,12 @@ function trust_ca_burp_in_firefox() {
     # Let time to Burp to init CA
     while [[ -z $(netstat -lnt|grep -Eo "(127.0.0.1|0.0.0.0):$burp_port") ]]
     do
-      if (( $timeout_counter < 30 )); then
+      if (( $timeout_counter < 120 )); then
         sleep 0.5
         timeout_counter=$((timeout_counter+1))
       else
         kill "$burp_pid"
+        rm -r "$(find /tmp/burp*.tmp -type d -printf '%T+ %p\n' | sort | head -n 1 | cut -d ' ' -f2)"  # Remove burp tmp files
         logger_error 'Process timed out, please trust the CA manually.'
         exit 1
       fi
@@ -81,9 +82,11 @@ function trust_ca_burp_in_firefox() {
     local burp_ca_name="PortSwigger CA"
     if ! wget -q "http://127.0.0.1:$burp_port/cert" -O "$burp_ca_path"; then
       kill "$burp_pid"
+      rm -r "$(find /tmp/burp*.tmp -type d -printf '%T+ %p\n' | sort | head -n 1 | cut -d ' ' -f2)"  # Remove burp tmp files
       logger_error 'The CA cert could not be retrieved, please trust it manually'
     fi
     kill "$burp_pid"
+    rm -r "$(find /tmp/burp*.tmp -type d -printf '%T+ %p\n' | sort | head -n 1 | cut -d ' ' -f2)"  # Remove burp tmp files
     logger_success 'CA trusted successfully'
   fi
 }
