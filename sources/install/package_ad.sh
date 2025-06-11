@@ -194,6 +194,8 @@ function install_bloodhound-ce() {
     git -C "${bloodhoundce_path}" clone --depth 1 --branch "${latestRelease}" "https://github.com/SpecterOps/BloodHound.git" src
     cd "${bloodhoundce_path}/src/" || exit
     catch_and_retry VERSION=v999.999.999 CHECKOUT_HASH="" python3 ./packages/python/beagle/main.py build --verbose --ci
+    # Force remove go and yarn cache that are not stored in standard locations
+    rm -rf "${bloodhoundce_path}/src/cache" "${bloodhoundce_path}/src/.yarn/cache"
 
     ## SharpHound
     local sharphound_url
@@ -481,7 +483,7 @@ function install_pypykatz() {
     colorecho "Installing pypykatz"
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       git -C /opt/tools/ clone --depth 1 https://github.com/skelsec/pypykatz
       cd /opt/tools/pypykatz || exit
@@ -723,7 +725,7 @@ function install_pygpoabuse() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
@@ -824,7 +826,7 @@ function install_pkinittools() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
@@ -836,8 +838,8 @@ function install_pkinittools() {
 }
 
 function install_pywhisker() {
-    colorecho "Installing pyWhisker"
     # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing pyWhisker"
     pipx install --system-site-packages git+https://github.com/ShutdownRepo/pywhisker
     add-history pywhisker
     add-test-command "pywhisker --help"
@@ -845,19 +847,19 @@ function install_pywhisker() {
 }
 
 function install_manspider() {
+    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing Manspider"
-    git -C /opt/tools clone --depth 1 https://github.com/blacklanternsecurity/MANSPIDER.git
-    cd /opt/tools/MANSPIDER || exit
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip3 install .
-    deactivate
-    touch ./man_spider/lib/init.py
-    sed -i "s#from .lib import#from lib import##" man_spider/manspider.py
-    add-aliases manspider
-    add-history manspider
-    add-test-command "manspider.py --help"
-    add-to-list "manspider,https://github.com/blacklanternsecurity/MANSPIDER,Manspider will crawl every share on every target system. If provided creds don't work it will fall back to 'guest' then to a null session."
+    if [[ $(uname -m) = 'x86_64' ]]
+    then
+        pipx install --system-site-packages git+https://github.com/blacklanternsecurity/MANSPIDER
+        add-history manspider
+        add-test-command "manspider --help"
+        add-to-list "manspider,https://github.com/blacklanternsecurity/MANSPIDER,Manspider will crawl every share on every target system. If provided creds don't work it will fall back to 'guest' then to a null session."
+    else
+        # https://github.com/blacklanternsecurity/MANSPIDER/issues/55
+        criticalecho-noexit "This installation function doesn't support architecture $(uname -m)" && return
+    fi
+    
 }
 
 function install_targetedKerberoast() {
@@ -1004,7 +1006,7 @@ function install_ldaprelayscan() {
     pip3 install -r requirements.txt
     # without following fix, tool raises "oscrypto.errors.LibraryNotFoundError: Error detecting the version of libcrypto"
     # see https://github.com/wbond/oscrypto/issues/78 and https://github.com/wbond/oscrypto/issues/75
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install --force oscrypto@git+https://github.com/wbond/oscrypto.git
     fi
@@ -1122,7 +1124,7 @@ function install_pre2k() {
     colorecho "Installing pre2k"
     pipx install --system-site-packages git+https://github.com/garrettfoster13/pre2k
     # https://github.com/fastapi/typer/discussions/1215
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pipx inject pre2k "click~=8.1.8" --force
     fi
@@ -1154,7 +1156,7 @@ function install_roastinthemiddle() {
     colorecho "Installing roastinthemiddle"
     pipx install --system-site-packages git+https://github.com/Tw1sm/RITM
     # https://github.com/fastapi/typer/discussions/1215
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pipx inject ritm "click~=8.1.8" --force
     fi
@@ -1260,7 +1262,7 @@ function install_GPOddity() {
     colorecho "Installing GPOddity"
     pipx install --system-site-packages git+https://github.com/synacktiv/GPOddity
     # https://github.com/fastapi/typer/discussions/1215
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pipx inject gpoddity "click~=8.1.8" --force
     fi
@@ -1413,7 +1415,7 @@ function install_sccmhunter() {
     source ./venv/bin/activate
     pip3 install -r requirements.txt
     # https://github.com/fastapi/typer/discussions/1215
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install click~=8.1.8
     fi
@@ -1466,7 +1468,7 @@ function install_conpass() {
     colorecho "Installing conpass"
     pipx install --system-site-packages git+https://github.com/login-securite/conpass
     # https://github.com/fastapi/typer/discussions/1215
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pipx inject conpass "click~=8.1.8" --force
     fi
@@ -1482,6 +1484,39 @@ function install_adminer() {
     add-history adminer
     add-test-command "adminer --help"
     add-to-list "AD-miner,https://github.com/Mazars-Tech/AD_Miner,Active Directory audit tool that leverages cypher queries."
+}
+
+function install_remotemonologue() {
+    colorecho "Installing RemoteMonologue"
+    git -C /opt/tools/ clone --depth 1 https://github.com/3lp4tr0n/RemoteMonologue
+    cd /opt/tools/RemoteMonologue || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install impacket
+    deactivate
+    add-aliases remotemonologue
+    add-history remotemonologue
+    add-test-command "remotemonologue.py --help"
+    add-to-list "RemoteMonologue,https://github.com/3lp4tr0n/RemoteMonologue,A tool to coerce NTLM authentications via DCOM"
+}
+
+function install_godap() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing godap"
+    go install -v github.com/Macmod/godap@latest
+    asdf reshim golang
+    add-history godap
+    add-test-command "godap --help"
+    add-to-list "godap,https://github.com/Macmod/godap,A complete TUI for LDAP."
+}
+
+function install_powerview() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing powerview.py"
+    pipx install git+https://github.com/aniqfakhrul/powerview.py
+    add-history powerview.py
+    add-test-command "powerview --help"
+    add-to-list "Powerview.py,https://github.com/aniqfakhrul/powerview.py,PowerView.py is an alternative for the awesome original PowerView.ps1 script."
 }
 
 function install_pysnaffler(){
@@ -1601,6 +1636,9 @@ function package_ad() {
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
+    install_remotemonologue        # A tool to coerce NTLM authentications via DCOM
+    install_godap                  # A complete terminal user interface (TUI) for LDAP
+    install_powerview              # Powerview Python implementation 
     install_pysnaffler             # Snaffler, but in Python
     post_install
     end_time=$(date +%s)

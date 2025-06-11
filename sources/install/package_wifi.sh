@@ -32,7 +32,7 @@ function install_pyrit() {
     # steps to remove temp fix:
     #  1. try to install pyrit with git clone + venv + setup.py install with python2 or 3 (without the git patch)
     #  2. if it works, remove the temp fix (and probably the patch as well)
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-07-01"
     if [ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]; then
       criticalecho "Temp fix expired. Exiting."
     else
@@ -97,10 +97,10 @@ function install_hcxtools() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing hcxtools"
     fapt libpcap-dev libcurl4 libcurl4-openssl-dev libssl-dev openssl pkg-config
-    git -C /opt/tools/ clone --depth 1 https://github.com/ZerBea/hcxtools
-    cd /opt/tools/hcxtools || exit
+    git -C /tmp clone --depth 1 https://github.com/ZerBea/hcxtools
+    cd /tmp/hcxtools || exit
     make -j
-    make install PREFIX=/opt/tools clean
+    make install PREFIX=/opt/tools
     add-history hcxtools
     add-test-command "hcxpcapngtool --version"
     add-test-command "hcxhashtool --version"
@@ -111,10 +111,10 @@ function install_hcxdumptool() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing hcxdumptool"
     fapt libpcap-dev libcurl4-openssl-dev
-    git -C /opt/tools/ clone --depth 1 https://github.com/ZerBea/hcxdumptool
-    cd /opt/tools/hcxdumptool || exit
+    git -C /tmp clone --depth 1 https://github.com/ZerBea/hcxdumptool
+    cd /tmp/hcxdumptool || exit
     make -j
-    make install PREFIX=/opt/tools clean
+    make install PREFIX=/opt/tools
     add-history hcxdumptool
     add-test-command "hcxdumptool --version"
     add-to-list "hcxdumptool,https://github.com/ZerBea/hcxdumptool,Small tool to capture packets from wlan devices."
