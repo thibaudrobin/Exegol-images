@@ -443,6 +443,39 @@ function install_asdf() {
     add-to-list "asdf,https://github.com/asdf-vm/asdf,Extendable version manager with support for ruby python go etc"
 }
 
+function install_openvpn() {
+  # CODE-CHECK-WHITELIST=add-aliases,add-history
+  fapt openvpn openresolv
+
+  # Fixing openresolv to update /etc/resolv.conf without resolvectl daemon (with a fallback if no DNS server are supplied)
+  LINE=$(($(grep -n 'up)' /etc/openvpn/update-resolv-conf | cut -d ':' -f1) +1))
+  sed -i "${LINE}"'i cp /etc/resolv.conf /etc/resolv.conf.backup' /etc/openvpn/update-resolv-conf
+
+  LINE=$(($(grep -n 'resolvconf -a' /etc/openvpn/update-resolv-conf | cut -d ':' -f1) +1))
+  # shellcheck disable=SC2016
+  sed -i "${LINE}"'i [ "$((resolvconf -l "tun*" 2>/dev/null || resolvconf -l "tap*") | grep -vE "^(\s*|#.*)$")" ] && /sbin/resolvconf -u || cp /etc/resolv.conf.backup /etc/resolv.conf' /etc/openvpn/update-resolv-conf
+  ((LINE++))
+  sed -i "${LINE}"'i rm /etc/resolv.conf.backup' /etc/openvpn/update-resolv-conf
+
+  add-test-command "openvpn --version"
+  add-to-list "OpenVPN,https://openvpn.net/,Fast and Easy Zero-Trust VPN Fully in Your Control"
+}
+
+function install_wireguard() {
+  # CODE-CHECK-WHITELIST=add-aliases,add-history
+  fapt wireguard
+
+  # Patch wireguard start script https://github.com/WireGuard/wireguard-tools/pull/5
+  local temp_fix_limit="2025-12-01"
+  if [ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]; then
+    criticalecho "Temp fix expired. Exiting."
+  else
+    sed -i 's/\[\[ \$proto == -4 \]\] && cmd sysctl -q net\.ipv4\.conf\.all\.src_valid_mark=1/[[ $proto == -4 ]] \&\& [[ $(sysctl -n net.ipv4.conf.all.src_valid_mark) -ne 1 ]] \&\& cmd sysctl -q net.ipv4.conf.all.src_valid_mark=1/' "$(which wg-quick)"
+  fi
+  add-test-command "wg-quick -h"
+  add-to-list "wireguard,https://www.wireguard.com,WireGuard is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography"
+}
+
 # Package dedicated to the basic things the env needs
 function package_base() {
     local start_time
@@ -466,7 +499,7 @@ function package_base() {
     less x11-apps net-tools vim nano jq iputils-ping iproute2 tidy mlocate libtool \
     dos2unix ftp sshpass telnet nfs-common ncat netcat-traditional socat rdate putty \
     screen p7zip-full p7zip-rar unrar xz-utils xsltproc parallel tree ruby ruby-dev ruby-full bundler \
-    nim perl libwww-perl openjdk-17-jdk openvpn openresolv wireguard \
+    nim perl libwww-perl openjdk-17-jdk \
     logrotate tmux tldr bat libxml2-utils virtualenv chromium libsasl2-dev \
     libldap2-dev libssl-dev isc-dhcp-client sqlite3 dnsutils samba ssh snmp faketime php \
     python3 python3-dev grc emacs-nox xsel xxd libnss3-tools
@@ -534,21 +567,11 @@ function package_base() {
     add-test-command "bat --version"
     DEBIAN_FRONTEND=noninteractive fapt macchanger      # Macchanger
     install_gf                                          # wrapper around grep
+    install_openvpn
+    install_wireguard
     install_firefox
 
     cp -v /root/sources/assets/grc/grc.conf /etc/grc.conf # grc
-
-    # openvpn
-    # Fixing openresolv to update /etc/resolv.conf without resolvectl daemon (with a fallback if no DNS server are supplied)
-    LINE=$(($(grep -n 'up)' /etc/openvpn/update-resolv-conf | cut -d ':' -f1) +1))
-    sed -i "${LINE}"'i cp /etc/resolv.conf /etc/resolv.conf.backup' /etc/openvpn/update-resolv-conf
-
-    LINE=$(($(grep -n 'resolvconf -a' /etc/openvpn/update-resolv-conf | cut -d ':' -f1) +1))
-    # shellcheck disable=SC2016
-    sed -i "${LINE}"'i [ "$((resolvconf -l "tun*" 2>/dev/null || resolvconf -l "tap*") | grep -vE "^(\s*|#.*)$")" ] && /sbin/resolvconf -u || cp /etc/resolv.conf.backup /etc/resolv.conf' /etc/openvpn/update-resolv-conf
-    ((LINE++))
-    sed -i "${LINE}"'i rm /etc/resolv.conf.backup' /etc/openvpn/update-resolv-conf
-    add-test-command "openvpn --version"
 
     # logrotate
     mv /root/sources/assets/logrotate/* /etc/logrotate.d/
