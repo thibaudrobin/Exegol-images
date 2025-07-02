@@ -147,6 +147,21 @@ function install_pwninit() {
     add-to-list "pwninit,https://github.com/io12/pwninit,A tool for automating starting binary exploit challenges"
 }
 
+function install_pycdc() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing pycdc"
+    git -C /tmp clone --depth 1 https://github.com/zrax/pycdc.git
+    mkdir -v /tmp/pycdc/build
+    cd /tmp/pycdc/build || exit
+    cmake ..
+    make -j
+    mv pycdc pycdas /opt/tools/bin
+    add-history pycdc
+    add-test-command "pycdc --help"
+    add-test-command "pycdas --help"
+    add-to-list "pycdc,https://github.com/zrax/pycdc,Python bytecode disassembler and decompiler."
+}
+
 # Package dedicated to reverse engineering tools
 function package_reverse() {
     set_env
@@ -163,6 +178,7 @@ function package_reverse() {
     install_ida
     install_jd-gui                  # Java decompiler
     install_pwninit                 # Tool for automating starting binary exploit
+    install_pycdc                   # Python bytecode disassembler and decompiler
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))
