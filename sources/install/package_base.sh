@@ -131,8 +131,8 @@ function install_pyenv() {
     # allowing python2, python3, python3.10, python3.11 and python3.13 to be found
     #  --> python points to python3
     #  --> python3 points to python3.11
-    #  --> python3.10 points to 3.10
     #  --> python3.13 points to 3.13
+    #  --> python3.10 points to 3.10
     #  --> python2 points to latest python2
     # shellcheck disable=SC2086
     pyenv global $PYTHON_VERSIONS
