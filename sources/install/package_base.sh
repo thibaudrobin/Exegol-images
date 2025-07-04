@@ -470,6 +470,7 @@ function install_wireguard() {
   # Patch wireguard start script https://github.com/WireGuard/wireguard-tools/pull/5
   local temp_fix_limit="2025-12-01"
   if check_temp_fix_expiry "$temp_fix_limit"; then
+    # shellcheck disable=SC2016
     sed -i 's/\[\[ \$proto == -4 \]\] && cmd sysctl -q net\.ipv4\.conf\.all\.src_valid_mark=1/[[ $proto == -4 ]] \&\& [[ $(sysctl -n net.ipv4.conf.all.src_valid_mark) -ne 1 ]] \&\& cmd sysctl -q net.ipv4.conf.all.src_valid_mark=1/' "$(which wg-quick)"
   fi
   add-test-command "wg-quick -h"
