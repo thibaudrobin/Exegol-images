@@ -122,7 +122,7 @@ function install_theharvester() {
     cd /opt/tools/theHarvester || exit
     python3.13 -m venv --system-site-packages ./venv
     source ./venv/bin/activate
-    pip3 install -r requirements.txt
+    pip3 install .
     deactivate
     add-aliases theharvester
     add-history theharvester
