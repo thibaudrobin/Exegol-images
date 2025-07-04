@@ -133,9 +133,7 @@ function install_havoc() {
     cd /opt/tools/Havoc || exit
     # https://github.com/HavocFramework/Havoc/issues/516 (seems fixed but keeping commented tempfix just in case)
     #    local temp_fix_limit="YYYY-MM-DD"
-    #    if [ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]; then
-    #      criticalecho "Temp fix expired. Exiting."
-    #    else
+    #    if check_temp_fix_expiry "$temp_fix_limit"; then
     #      git -C /opt/tools/ clone https://github.com/HavocFramework/Havoc
     #      git -C /opt/tools/Havoc checkout ea3646e055eb1612dcc956130fd632029dbf0b86
     #      go mod download golang.org/x/sys
