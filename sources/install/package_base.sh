@@ -13,10 +13,7 @@ function install_exegol-history() {
     colorecho "Installing Exegol-history"
     git -C /opt/tools/ clone --depth 1 https://github.com/ThePorgs/Exegol-history
     cd /opt/tools/Exegol-history || exit
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip3 install -r requirements.txt
-    deactivate
+    pipx install --system-site-packages /opt/tools/Exegol-history
     add-aliases exegol-history
     add-history exegol-history
     add-test-command "exh -h"
