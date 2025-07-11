@@ -40,16 +40,35 @@ function install_pwntools() {
     add-to-list "pwntools,https://github.com/Gallopsled/pwntools,a CTF framework and exploit development library"
 }
 
-function install_pwndbg() {
-    colorecho "Installing pwndbg"
-    git -C /opt/tools/ clone --depth 1 https://github.com/pwndbg/pwndbg
-    cd /opt/tools/pwndbg || exit
+function install_gdb_plugins() {
+    colorecho "Installing GDB plugins"
+    mkdir -p /opt/tools/gdb
+
+    # Pwndbg
+    colorecho "Installing pwndbg GDB plugin"
+    git -C /opt/tools/gdb clone --depth 1 https://github.com/pwndbg/pwndbg
+    cd /opt/tools/gdb/pwndbg || exit
     ./setup.sh
-    echo 'set disassembly-flavor intel' >> ~/.gdbinit
+    add-to-list "pwndbg,https://github.com/pwndbg/pwndbg,a GDB plugin that makes debugging with GDB suck less"
+
+    # PEDA
+    colorecho "Installing PEDA GDB plugin"
+    git -C /opt/tools/gdb clone --depth 1 https://github.com/longld/peda.git
+    add-to-list "peda,https://github.com/longld/peda,Python Exploit Development Assistance for GDB."
+
+    # GEF
+    colorecho "Installing GEF GDB plugin"
+    mkdir -p /opt/tools/gdb/gef
+    wget "https://raw.githubusercontent.com/hugsy/gef/refs/heads/main/gef.py" -O /opt/tools/gdb/gef/gef.py
+    add-to-list "gef,https://github.com/hugsy/gef,A modern experience for GDB with advanced debugging capabilities for exploit devs & reverse engineers on Linux."
+
+    # GDB
+    cp -v /root/sources/assets/shells/gdbinit ~/.gdbinit
     add-aliases gdb
     add-history gdb
     add-test-command "gdb --help"
-    add-to-list "pwndbg,https://github.com/pwndbg/pwndbg,a GDB plugin that makes debugging with GDB suck less"
+    add-test-command "gdb-peda --help"
+    add-test-command "gdb-gef --help"
 }
 
 function install_angr() {
@@ -172,7 +191,7 @@ function package_reverse() {
     start_time=$(date +%s)
     install_reverse_apt_tools
     install_pwntools                # CTF framework and exploit development library
-    install_pwndbg                  # Advanced Gnu Debugger
+    install_gdb_plugins             # GDB plugins (pwndbg, PEDA, GEF)
     install_angr                    # Binary analysis
     install_checksec-py             # Check security on binaries
     install_radare2                 # Awesome debugger
