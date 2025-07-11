@@ -58,7 +58,7 @@ function install_wfuzz() {
     mkdir /usr/share/wfuzz
     git -C /tmp clone --depth 1 https://github.com/xmendez/wfuzz.git
     # Wait for fix / PR to be merged: https://github.com/xmendez/wfuzz/issues/366
-    local temp_fix_limit="2025-06-01"
+    local temp_fix_limit="2025-09-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       pip3 install pycurl  # remove this line and uncomment the first when issue is fix
       sed -i 's/pyparsing>=2.4\*;/pyparsing>=2.4.2;/' /tmp/wfuzz/setup.py
@@ -109,12 +109,20 @@ function install_amass() {
 function install_ffuf() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing ffuf"
-    git -C /opt/tools clone --depth 1 https://github.com/ffuf/ffuf.git
-    cd /opt/tools/ffuf || exit
-    go build .
-    mv ./ffuf /opt/tools/bin/
-    # https://github.com/ffuf/ffuf/issues/681
-    # go install github.com/ffuf/ffuf/v2@latest
+    if [[ $(uname -m) = 'x86_64' ]]
+    then
+        local arch="amd64"
+
+    elif [[ $(uname -m) = 'aarch64' ]]
+    then
+        local arch="arm64"
+    else
+        criticalecho-noexit "This installation function doesn't support architecture $(uname -m)" && return
+    fi
+    local ffuf_url
+    ffuf_url=$(curl --location --silent "https://api.github.com/repos/ffuf/ffuf/releases/latest" | grep 'browser_download_url.*ffuf.*linux_'"$arch"'.tar.gz"' | grep -o 'https://[^"]*')
+    curl --location -o /tmp/ffuf.tar.gz "$ffuf_url"
+    tar -xf /tmp/ffuf.tar.gz --directory /opt/tools/bin/
     add-history ffuf
     add-test-command "ffuf --help"
     add-to-list "ffuf,https://github.com/ffuf/ffuf,Fast web fuzzer written in Go."
@@ -829,11 +837,10 @@ function install_sqlmap() {
 function install_sslscan() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing sslscan"
-    git -C /opt/tools clone --depth 1 https://github.com/rbsec/sslscan.git
-    cd /opt/tools/sslscan || exit
+    git -C /tmp clone --depth 1 https://github.com/rbsec/sslscan.git
+    cd /tmp/sslscan || exit
     make static
-    mv /opt/tools/sslscan/sslscan /opt/tools/bin/sslscan
-    make clean
+    mv /tmp/sslscan/sslscan /opt/tools/bin/sslscan
     add-history sslscan
     add-test-command "sslscan --version"
     add-to-list "sslscan,https://github.com/rbsec/sslscan,a tool for testing SSL/TLS encryption on servers"
@@ -903,6 +910,16 @@ function install_token_exploiter() {
     add-test-command "token-exploiter --help"
     add-to-list "token-exploiter,https://github.com/psyray/token-exploiter,Token Exploiter is a tool designed to analyze GitHub Personal Access Tokens."
 }
+
+function install_bbot() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing BBOT"
+    pipx install --system-site-packages bbot
+    add-history bbot
+    add-test-command "bbot --help"
+    add-to-list "BBOT,https://github.com/blacklanternsecurity/bbot,BEE·bot is a multipurpose scanner inspired by Spiderfoot built to automate your Recon and ASM."
+}
+
 
 # Package dedicated to applicative and active web pentest tools
 function package_web() {
@@ -984,6 +1001,7 @@ function package_web() {
     install_postman                 # Postman - API platform for testing APIs
     install_zap                     # Zed Attack Proxy
     install_token_exploiter         # Github personal token Analyzer
+    install_bbot                    # Recursive Scanner
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))
