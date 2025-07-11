@@ -25,7 +25,6 @@ source package_code_analysis.sh
 source package_cracking.sh
 source package_c2.sh
 source package_desktop.sh
-source package_blockchain.sh
 
 # Entry point for the installation
 if [[ $EUID -ne 0 ]]; then
