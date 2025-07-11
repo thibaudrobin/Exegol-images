@@ -90,7 +90,12 @@ function install_searchsploit() {
 function install_triliumnext() {
     colorecho "Installing TriliumNext"
     fapt libpng16-16 libpng-dev pkg-config autoconf libtool build-essential nasm libx11-dev libxkbfile-dev
-    git -C /opt/tools/ clone --depth 1 https://github.com/triliumnext/notes.git triliumnext
+    # https://github.com/TriliumNext/Notes/issues/1890
+    local temp_fix_limit="2025-09-01"
+    if check_temp_fix_expiry "$temp_fix_limit"; then
+      git -C /opt/tools/ clone --branch v0.93.0 --depth 1 https://github.com/triliumnext/notes.git triliumnext
+    fi
+    #git -C /opt/tools/ clone --depth 1 https://github.com/triliumnext/notes.git triliumnext
     cd /opt/tools/triliumnext || exit
     zsh -c "source ~/.zshrc && nvm use default && npm install"
     mkdir /opt/tools/triliumnext/data
@@ -140,11 +145,10 @@ function install_objectwalker() {
 function install_tig() {
     # CODE-CHECK-WHITELIST=add-aliases,add-history
     colorecho "Installing tig"
-    git -C /opt/tools clone --depth 1 https://github.com/jonas/tig.git
-    cd /opt/tools/tig || exit
+    git -C /tmp clone --depth 1 https://github.com/jonas/tig.git
+    cd /tmp/tig || exit
     make -j
-    make install clean
-    mv /root/bin/tig /opt/tools/bin/tig
+    make install bindir=/opt/tools/bin sysconfdir=/etc
     # Need add-history ?
     add-test-command "tig --help"
     add-to-list "tig,https://github.com/jonas/tig,Tig is an ncurses-based text-mode interface for git."
