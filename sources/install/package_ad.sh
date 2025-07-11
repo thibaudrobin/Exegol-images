@@ -1486,6 +1486,18 @@ function install_adminer() {
     add-to-list "AD-miner,https://github.com/Mazars-Tech/AD_Miner,Active Directory audit tool that leverages cypher queries."
 }
 
+function install_goexec() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing GoExec"
+    git -C /opt/tools clone --depth 1 https://github.com/FalconOpsLLC/goexec
+    cd /opt/tools/goexec || exit
+    asdf set golang 1.24.1
+    CGO_ENABLED=0 go build -ldflags="-s -w"
+    ln -s /opt/tools/goexec/goexec /opt/tools/bin/goexec
+    add-history goexec
+    add-test-command "goexec --help"
+    add-to-list "GoExec,https://github.com/FalconOpsLLC/goexec,GoExec is a new take on some of the methods used to gain remote execution on Windows devices. GoExec implements a number of largely unrealized execution methods and provides significant OPSEC improvements overall"
+
 function install_remotemonologue() {
     colorecho "Installing RemoteMonologue"
     git -C /opt/tools/ clone --depth 1 https://github.com/3lp4tr0n/RemoteMonologue
@@ -1636,6 +1648,7 @@ function package_ad() {
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
+    install_goexec                 # Go version of *exec (smb,dcom...) from impacket with stronger OPSEC
     install_remotemonologue        # A tool to coerce NTLM authentications via DCOM
     install_godap                  # A complete terminal user interface (TUI) for LDAP
     install_powerview              # Powerview Python implementation 
