@@ -13,10 +13,7 @@ function install_exegol-history() {
     colorecho "Installing Exegol-history"
     git -C /opt/tools/ clone --depth 1 https://github.com/ThePorgs/Exegol-history
     cd /opt/tools/Exegol-history || exit
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip3 install -r requirements.txt
-    deactivate
+    pipx install --system-site-packages /opt/tools/Exegol-history
     add-aliases exegol-history
     add-history exegol-history
     add-test-command "exh -h"
@@ -50,7 +47,7 @@ function install_go() {
     #asdf install golang latest
     #asdf set --home golang latest
     # With golang 1.23 many package build are broken, temp fix to use 1.22.2 as golang latest
-    local temp_fix_limit="2025-07-01"
+    local temp_fix_limit="2025-09-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       # 1.23 needed by BloodHound-CE, and sensepost/ruler
       asdf install golang 1.23.0
@@ -131,8 +128,8 @@ function install_pyenv() {
     # allowing python2, python3, python3.10, python3.11 and python3.13 to be found
     #  --> python points to python3
     #  --> python3 points to python3.11
-    #  --> python3.10 points to 3.10
     #  --> python3.13 points to 3.13
+    #  --> python3.10 points to 3.10
     #  --> python2 points to latest python2
     # shellcheck disable=SC2086
     pyenv global $PYTHON_VERSIONS
@@ -445,6 +442,7 @@ function install_asdf() {
 
 function install_openvpn() {
   # CODE-CHECK-WHITELIST=add-aliases,add-history
+  colorecho "Installing OpenVPN"
   fapt openvpn openresolv
 
   # Fixing openresolv to update /etc/resolv.conf without resolvectl daemon (with a fallback if no DNS server are supplied)
@@ -463,13 +461,13 @@ function install_openvpn() {
 
 function install_wireguard() {
   # CODE-CHECK-WHITELIST=add-aliases,add-history
+  colorecho "Installing WireGuard"
   fapt wireguard
 
   # Patch wireguard start script https://github.com/WireGuard/wireguard-tools/pull/5
   local temp_fix_limit="2025-12-01"
-  if [ "$(date +%Y%m%d)" -gt "$(date -d $temp_fix_limit +%Y%m%d)" ]; then
-    criticalecho "Temp fix expired. Exiting."
-  else
+  if check_temp_fix_expiry "$temp_fix_limit"; then
+    # shellcheck disable=SC2016
     sed -i 's/\[\[ \$proto == -4 \]\] && cmd sysctl -q net\.ipv4\.conf\.all\.src_valid_mark=1/[[ $proto == -4 ]] \&\& [[ $(sysctl -n net.ipv4.conf.all.src_valid_mark) -ne 1 ]] \&\& cmd sysctl -q net.ipv4.conf.all.src_valid_mark=1/' "$(which wg-quick)"
   fi
   add-test-command "wg-quick -h"
