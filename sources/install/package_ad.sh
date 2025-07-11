@@ -1497,6 +1497,7 @@ function install_goexec() {
     add-history goexec
     add-test-command "goexec --help"
     add-to-list "GoExec,https://github.com/FalconOpsLLC/goexec,GoExec is a new take on some of the methods used to gain remote execution on Windows devices. GoExec implements a number of largely unrealized execution methods and provides significant OPSEC improvements overall"
+}
 
 function install_remotemonologue() {
     colorecho "Installing RemoteMonologue"
