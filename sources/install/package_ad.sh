@@ -1489,11 +1489,11 @@ function install_adminer() {
 function install_goexec() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing GoExec"
-    git -C /opt/tools clone --depth 1 https://github.com/FalconOpsLLC/goexec
-    cd /opt/tools/goexec || exit
-    asdf set golang 1.24.1
-    CGO_ENABLED=0 go build -ldflags="-s -w"
-    ln -s /opt/tools/goexec/goexec /opt/tools/bin/goexec
+    export ASDF_GOLANG_VERSION=1.24.1
+    go install -v -ldflags="-s -w" github.com/FalconOpsLLC/goexec@latest
+    unset ASDF_GOLANG_VERSION
+    env
+    asdf reshim golang
     add-history goexec
     add-test-command "goexec --help"
     add-to-list "GoExec,https://github.com/FalconOpsLLC/goexec,GoExec is a new take on some of the methods used to gain remote execution on Windows devices. GoExec implements a number of largely unrealized execution methods and provides significant OPSEC improvements overall"
