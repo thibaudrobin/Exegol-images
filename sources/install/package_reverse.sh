@@ -124,6 +124,23 @@ function install_ida() {
     add-to-list "ida,https://www.hex-rays.com/products/ida/,Interactive disassembler for software analysis."
 }
 
+function install_binaryninja() {
+    # CODE-CHECK-WHITELIST=add-test-command,add-aliases,add-history
+    colorecho "Installing Binary Ninja"
+    if [[ $(uname -m) = 'x86_64' ]]
+    then
+        wget "https://cdn.binary.ninja/installers/binaryninja_free_linux.zip" -O /tmp/binaryninja_free_linux.zip
+        unzip /tmp/binaryninja_free_linux.zip -d /opt/tools
+        ln -s "/opt/tools/binaryninja/binaryninja" "/opt/tools/bin/binaryninja"
+    else
+        criticalecho-noexit "This installation function doesn't support architecture $(uname -m), Binary Ninja only supports x86/x64" && return
+    fi
+    # TODO add-test-command GUI app
+    # TODO replace dashes by commas once `add-to-list` supports commas in tool description
+    add-to-list "binaryninja,https://binary.ninja,An interactive decompiler - disassembler - debugger and binary analysis platform built by reverse engineers for reverse engineers."
+}
+
+
 function install_jd-gui() {
     # CODE-CHECK-WHITELIST=add-test-command
     colorecho "Installing jd-gui"
@@ -161,6 +178,7 @@ function package_reverse() {
     install_radare2                 # Awesome debugger
     install_ghidra
     install_ida
+    install_binaryninja
     install_jd-gui                  # Java decompiler
     install_pwninit                 # Tool for automating starting binary exploit
     post_install
