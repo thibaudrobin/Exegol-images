@@ -125,17 +125,16 @@ function install_ida() {
 }
 
 function install_binaryninja() {
-    # CODE-CHECK-WHITELIST=add-test-command
+    # CODE-CHECK-WHITELIST=add-test-command,add-aliases,add-history
     colorecho "Installing Binary Ninja"
     if [[ $(uname -m) = 'x86_64' ]]
     then
         wget "https://cdn.binary.ninja/installers/binaryninja_free_linux.zip" -O /tmp/binaryninja_free_linux.zip
         unzip /tmp/binaryninja_free_linux.zip -d /opt/tools
+        ln -s "/opt/tools/binaryninja/binaryninja" "/opt/tools/bin/binaryninja"
     else
         criticalecho-noexit "This installation function doesn't support architecture $(uname -m), Binary Ninja only supports x86/x64" && return
     fi
-    add-aliases binaryninja
-    add-history binaryninja
     # TODO add-test-command GUI app
     # TODO replace dashes by commas once `add-to-list` supports commas in tool description
     add-to-list "binaryninja,https://binary.ninja,An interactive decompiler - disassembler - debugger and binary analysis platform built by reverse engineers for reverse engineers."
