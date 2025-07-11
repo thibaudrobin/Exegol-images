@@ -1490,7 +1490,7 @@ function install_goexec() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing GoExec"
     export ASDF_GOLANG_VERSION=1.24.1
-    go install -v -ldflags="-s -w" github.com/FalconOpsLLC/goexec@latest
+    go install -v -ldflags='-s -w' github.com/FalconOpsLLC/goexec@latest
     unset ASDF_GOLANG_VERSION
     env
     asdf reshim golang
