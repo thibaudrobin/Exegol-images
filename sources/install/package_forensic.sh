@@ -123,7 +123,7 @@ function install_oletools() {
     pipx install --system-site-packages oletools
     add-history oletools
     add-test-command "olevba --help"
-    add-to-list "oletools,https://github.com/decalage2/oletools,python tools to analyze MS OLE2 files and MS Office documents, for malware analysis, forensics and debugging."
+    add-to-list "oletools,https://github.com/decalage2/oletools,python tools to analyze MS OLE2 files and MS Office documents - for malware analysis - forensics and debugging."
 }
 
 # Package dedicated to forensic tools
