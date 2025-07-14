@@ -141,12 +141,10 @@ function catch_and_retry() {
 
 function define_retry_function() {
   local original_command=$1
-  local original_command_path
-  original_command_path=$(which "$1")
   eval "
   function $original_command() {
     colorecho 'Catch & retry function for: $1'
-    catch_and_retry $original_command_path \$@
+    catch_and_retry \"\$(which $original_command)\" \$@
   }
   "
 }
