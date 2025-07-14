@@ -143,7 +143,7 @@ function define_retry_function() {
   eval "
   function $original_command() {
     colorecho 'Catch & retry function for: $1'
-    catch_and_retry \"\$(which $original_command)\" \$@
+    catch_and_retry \"\$(which $original_command)\" \"\$@\"
   }
   "
 }
