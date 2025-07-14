@@ -126,8 +126,7 @@ function catch_and_retry() {
     #  it means commands like "cmd1 && cmd2" won't work and will be interpreted as "cmd1 \&\& cmd2"
     echo "[EXEGOL C&R DEBUG]" "$@"
     # If command exits successfully, no need for more retries
-    # shellcheck disable=SC2068
-    $@ && return 0
+    "$@" && return 0
     # Calculate the exponential backoff time
     local wait_time=$((scale_factor * (base_exponent ** i)))
     # Cap it at max_wait_time
