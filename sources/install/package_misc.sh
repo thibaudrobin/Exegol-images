@@ -16,7 +16,6 @@ function install_misc_apt_tools() {
     add-test-command "rlwrap --version"                            # Reverse shell utility
     add-test-command "convert -version"                            # Copy, modify, and distribute image
     add-test-command "rsync -h"                                    # File synchronization tool for efficiently copying and updating data between local or remote locations.
-    add-test-command "keepassxc --help"                            # Cross-platform password manager
 
     add-to-list "rlwrap,https://github.com/hanslub42/rlwrap,rlwrap is a small utility that wraps input and output streams of executables / making it possible to edit and re-run input history"
     add-to-list "imagemagick,https://github.com/ImageMagick/ImageMagick,ImageMagick is a free and open-source image manipulation tool used to create / edit / compose / or convert bitmap images."
