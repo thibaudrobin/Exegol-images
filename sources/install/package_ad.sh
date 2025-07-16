@@ -1534,9 +1534,14 @@ function install_powerview() {
 }
 
 function install_pysnaffler(){
-    # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing pysnaffler"
-    pipx install --system-site-packages git+https://github.com/skelsec/pysnaffler
+    git -C /opt/tools/ clone --depth 1 https://github.com/skelsec/pysnaffler
+    cd /opt/tools/pysnaffler || exit
+    python3.13 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install .
+    deactivate
+    add-aliases pysnaffler
     add-history pysnaffler
     add-test-command "pysnaffler --help"
     add-to-list "pysnaffler,https://github.com/skelsec/pysnaffler,Snaffler. But in python."
