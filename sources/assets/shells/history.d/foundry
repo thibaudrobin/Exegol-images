@@ -1,0 +1,1 @@
+cast wallet new ~/.foundry/keystores default && export ETH_KEYSTORE_ACCOUNT=default
