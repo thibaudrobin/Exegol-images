@@ -222,26 +222,6 @@ function install_dtrx() {
     add-to-list "dtrx,https://github.com/dtrx-py/dtrx,Do The Right eXtraction - don't remember what set of tar flags or where to pipe the output to extract it? no worries!"
 }
 
-# TODO: maybe move this function in a blockchain package later
-function install_foundry() {
-    # CODE-CHECK-WHITELIST=add-aliases
-    colorecho "Installing foundry"
-    # Installation doc: <https://book.getfoundry.sh/getting-started/installation>
-    curl -sSL https://foundry.paradigm.xyz -o /tmp/get-foundry.sh
-    bash /tmp/get-foundry.sh
-    source /root/.zshenv
-    foundryup
-    # As an other tool called chisel is installed, we rename it to avoid conflicts
-    # Luckily, foundry's chisel is not really used a lot :)
-    mv /root/.foundry/bin/chisel /root/.foundry/bin/foundry-chisel
-    add-history foundry
-    add-test-command "forge --help"
-    add-test-command "cast --help"
-    add-test-command "anvil --help"
-    add-test-command "foundry-chisel --help"
-    add-to-list "foundry,https://github.com/foundry-rs/foundry,Fast, portable and modular toolkit for Ethereum application development."
-}
-
 # Package dedicated to offensive miscellaneous tools
 function package_misc() {
     set_env
@@ -265,7 +245,6 @@ function package_misc() {
     install_uploader        # uploader for fast file upload
     install_wesng           # Search Windows vulnerability via systeminfo
     install_dtrx            # Intelligent archive extractor
-    install_foundry         # Ethereum development tools
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))
