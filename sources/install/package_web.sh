@@ -727,6 +727,36 @@ function install_httpx() {
     add-to-list "httpx,https://github.com/projectdiscovery/httpx,A tool for identifying web technologies and vulnerabilities / including outdated software versions and weak encryption protocols."
 }
 
+function install_alterx() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing alterx"
+    go install -v github.com/projectdiscovery/alterx/cmd/alterx@latest
+    asdf reshim golang
+    add-history alterx
+    add-test-command "alterx --help"
+    add-to-list "alterx,https://github.com/projectdiscovery/alterx,A tool for fast and customizable subdomain wordlist generator using DSL from ProjectDiscovery."
+}
+
+function install_chaos() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing chaos"
+    go install -v github.com/projectdiscovery/chaos-client/cmd/chaos@latest
+    asdf reshim golang
+    add-history chaos
+    add-test-command "chaos --help"
+    add-to-list "chaos,https://github.com/projectdiscovery/alterx,A Go client to communicate with Chaos dataset API from ProjectDiscovery."
+}
+
+function install_uncover() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing uncover"
+    go install -v github.com/projectdiscovery/uncover/cmd/uncover@latest
+    asdf reshim golang
+    add-history uncover
+    add-test-command "uncover --help"
+    add-to-list "uncover,https://github.com/projectdiscovery/uncover,A tool to Quickly discover exposed hosts on the internet using multiple search engines from ProjectDiscovery."
+}
+
 function install_anew() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing anew"
@@ -985,6 +1015,9 @@ function package_web() {
     install_hakrevdns               # Reverse DNS lookups
     install_httprobe                # Probe http
     install_httpx                   # Probe http
+    install_alterx                  # Subdomain wordlist generator
+    install_chaos                   # Exposed hosts discovery using multiple search engines
+    install_uncover                 # Quickly discover exposed hosts on the internet using multiple search engines.
     install_anew                    # A tool for adding new lines to files, skipping duplicates
     install_robotstester            # Robots.txt scanner
     install_naabu                   # Fast port scanner
