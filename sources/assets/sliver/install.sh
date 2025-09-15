@@ -134,7 +134,7 @@ if test -f "/tmp/$SLIVER_CLIENT"; then
     mv "/tmp/$SLIVER_CLIENT" /opt/tools/bin/sliver-client
 
     echo "Setting permissions for the Sliver client executable..."
-    chmod 755 "/opt/tools/bin/$SLIVER_CLIENT"
+    chmod 755 /opt/tools/bin/sliver-client
 
     echo "Creating a symbolic link for sliver-client at /opt/tools/bin/sliver..."
     ln -sf /opt/tools/bin/sliver-client /opt/tools/bin/sliver
