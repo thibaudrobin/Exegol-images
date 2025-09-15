@@ -94,7 +94,9 @@ function install_triliumnext() {
     fapt libpng16-16 libpng-dev pkg-config autoconf libtool build-essential nasm libx11-dev libxkbfile-dev
     git -C /opt/tools/ clone --branch v0.95.0 --depth 1 https://github.com/triliumnext/notes.git triliumnext
     cd /opt/tools/triliumnext || exit
-    curl -fsSL https://get.pnpm.io/install.sh | sh -
+    curl -fsSL https://get.pnpm.io/install.sh -o /tmp/install_pnpm.sh
+    chmod +x /tmp/install_pnpm.sh
+    bash /tmp/install_pnpm.sh
     apt-get purge -y node-gyp
     zsh -c "source ~/.zshrc && npm i -g node-gyp"
     zsh -c "source ~/.zshrc && pnpm install"
