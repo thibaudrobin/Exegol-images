@@ -1392,21 +1392,19 @@ function install_dploot() {
     add-to-list "dploot,https://github.com/zblurx/dploot,dploot is Python rewrite of SharpDPAPI written un C#."
 }
 
-# function install_PXEThief() {
-#     # CODE-CHECK-WHITELIST=
-#     colorecho "Installing PXEThief"
-#     git -C /opt/tools/ clone --depth 1 https://github.com/MWR-CyberSec/PXEThief
-#     cd /opt/tools/PXEThief || exit
-#     python3 -m venv ./venv
-#     source ./venv/bin/activate
-# TODO: pywin32 not found
-#     pip3 install -r requirements.txt
-#     deactivate
-#     add-aliases PXEThief
-#     add-history PXEThief
-#     add-test-command "PXEThief --help"
-#     add-to-list "PXEThief,https://github.com/MWR-CyberSec/PXEThief,PXEThief is a toolset designed to exploit vulnerabilities in Microsoft Endpoint Configuration Manager's OS Deployment enabling credential theft from network and task sequence accounts."
-# }
+function install_PXEThief() {
+    colorecho "Installing PXEThief"
+    git -C /opt/tools/ clone --depth 1 https://github.com/blurbdust/PXEThief.git
+    cd /opt/tools/PXEThief || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install -r requirements.txt
+    deactivate
+    add-aliases pxethief
+    add-history pxethief
+    add-test-command "pxethief -h"
+    add-to-list "PXEThief,https://github.com/blurbdust/PXEThief,PXEThief is a set of tooling that can extract passwords from the Operating System Deployment functionality in Microsoft Endpoint Configuration Manager"
+}
 
 function install_sccmhunter() {
     colorecho "Installing sccmhunter"
@@ -1663,7 +1661,7 @@ function package_ad() {
     install_bloodyAD               # Active Directory privilege escalation swiss army knife.
     install_autobloody             # Automatically exploit Active Directory privilege escalation paths.
     install_dploot                 # Python rewrite of SharpDPAPI written un C#.
-    # install_PXEThief             # TODO: pywin32 not found - PXEThief is a toolset designed to exploit vulnerabilities in Microsoft Endpoint Configuration Manager's OS Deployment, enabling credential theft from network and task sequence accounts.
+    install_PXEThief
     install_sccmhunter             # SCCMHunter is a post-ex tool built to streamline identifying, profiling, and attacking SCCM related assets in an Active Directory domain.
     install_sccmsecrets
     install_sccmwtf                # This code is designed for exploring SCCM in a lab.
