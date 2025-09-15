@@ -46,12 +46,12 @@ function install_go() {
     # CODE-CHECK-WHITELIST=add-aliases,add-to-list,add-history
     colorecho "Installing go (Golang)"
     asdf plugin add golang https://github.com/asdf-community/asdf-golang.git
-    # 1.19 needed by sliver
-    asdf install golang 1.19
+    # 1.19 needed by sliver (not now ?)
+    # asdf install golang 1.19
     #asdf install golang latest
     #asdf set --home golang latest
     # With golang 1.23 many package build are broken, temp fix to use 1.22.2 as golang latest
-    local temp_fix_limit="2025-09-01"
+    local temp_fix_limit="2025-10-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
       # 1.24.1 needed for GoExec
       asdf install golang 1.24.1
