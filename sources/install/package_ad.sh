@@ -1455,6 +1455,20 @@ function install_sccmwtf() {
     add-to-list "sccmwtf,https://github.com/xpn/sccmwtf,This code is designed for exploring SCCM in a lab."
 }
 
+function install_cmloot() {
+    colorecho "Installing cmloot"
+    git -C /opt/tools/ clone --depth 1 https://github.com/shelltrail/cmloot.git
+    cd /opt/tools/cmloot || exit
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip3 install -r requirements.txt
+    deactivate
+    add-aliases cmloot
+    add-history cmloot
+    add-test-command "cmloot -h"
+    add-to-list "cmloot,https://github.com/shelltrail/cmloot,cmloot.py is built to aid penetration testers to search and find sensitive files in Configuration Manager's complex file share structure."
+}
+
 function install_smbclientng() {
     # CODE-CHECK-WHITELIST=add-aliases
     colorecho "Installing smbclient-ng"
@@ -1653,6 +1667,7 @@ function package_ad() {
     install_sccmhunter             # SCCMHunter is a post-ex tool built to streamline identifying, profiling, and attacking SCCM related assets in an Active Directory domain.
     install_sccmsecrets
     install_sccmwtf                # This code is designed for exploring SCCM in a lab.
+    install_cmloot
     install_smbclientng
     install_conpass                # Python tool for continuous password spraying taking into account the password policy.
     install_adminer
