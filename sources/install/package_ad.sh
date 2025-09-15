@@ -353,7 +353,7 @@ function install_ruler() {
     colorecho "Downloading ruler and form templates"
     mkdir -p /opt/tools/ruler || exit
     cd /opt/tools/ruler || exit
-    asdf set golang 1.23.0
+    asdf set golang 1.24.1
     mkdir -p .go/bin
     GOBIN=/opt/tools/ruler/.go/bin go install -v github.com/sensepost/ruler@latest
     asdf reshim golang
