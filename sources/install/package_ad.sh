@@ -1560,6 +1560,15 @@ function install_pysnaffler(){
     add-to-list "pysnaffler,https://github.com/skelsec/pysnaffler,Snaffler. But in python."
 }
 
+function install_evil-winrm-py() {
+    # CODE-CHECK-WHITELIST=add-aliases
+    colorecho "Installing evil-winrm-py"
+    pipx install --system-site-package 'evil-winrm-py[kerberos]@git+https://github.com/adityatelange/evil-winrm-py'
+    add-history evil-winrm-py
+    add-test-command "evil-winrm-py --help"
+    add-to-list "evil-winrm-py,https://github.com/adityatelange/evil-winrm-py,Evil-WinRM. But in python"
+}
+
 # Package dedicated to internal Active Directory tools
 function package_ad() {
     set_env
@@ -1674,6 +1683,7 @@ function package_ad() {
     install_godap                  # A complete terminal user interface (TUI) for LDAP
     install_powerview              # Powerview Python implementation 
     install_pysnaffler             # Snaffler, but in Python
+    install_evil-winrm-py          # Evil-Winrm, but in Python
     post_install
     end_time=$(date +%s)
     local elapsed_time=$((end_time - start_time))
