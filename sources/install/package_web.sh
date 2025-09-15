@@ -171,6 +171,7 @@ function install_nosqlmap() {
     git -C /opt/tools clone --depth 1 https://github.com/codingo/NoSQLMap.git
     cd /opt/tools/NoSQLMap || exit
     virtualenv --python python2 ./venv
+    sed -i 's/requests==2\.32\.4/requests==2.27.1/' setup.py
     catch_and_retry ./venv/bin/python2 setup.py install
     # https://github.com/codingo/NoSQLMap/issues/126
     rm -rf venv/lib/python2.7/site-packages/certifi-2023.5.7-py2.7.egg
