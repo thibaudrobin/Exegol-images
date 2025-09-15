@@ -33,7 +33,7 @@ fi
 for cmd in curl awk gpg; do
     if ! command -v "$cmd" &> /dev/null; then		
         echo "$cmd could not be found, installing..."
-		${INSTALLER[@]} "$cmd"
+		"${INSTALLER[@]}" "$cmd"
     fi
 done
 
