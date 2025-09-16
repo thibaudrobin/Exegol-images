@@ -193,9 +193,24 @@ function install_bloodhound-ce() {
     latestRelease=$(jq --raw-output 'first(.[] | select(.tag_name | contains("-rc") | not) | .tag_name)' "${curl_tempfile}")
     git -C "${bloodhoundce_path}" clone --depth 1 --branch "${latestRelease}" "https://github.com/SpecterOps/BloodHound.git" src
     cd "${bloodhoundce_path}/src/" || exit
+    asdf set golang 1.24.4
+    mods=$( { git ls-files '**/go.mod' 2>/dev/null || true; } | xargs -r -n1 dirname | sort -u )
+    go work init $mods
     catch_and_retry /bin/sh -c 'VERSION=v999.999.999 CHECKOUT_HASH="" python3 ./packages/python/beagle/main.py build --verbose --ci'
     # Force remove go and yarn cache that are not stored in standard locations
     rm -rf "${bloodhoundce_path}/src/cache" "${bloodhoundce_path}/src/.yarn/cache"
+    VERSION_PKG="github.com/specterops/bloodhound/cmd/api/src/version"
+    git --no-pager -c 'versionsort.suffix=-rc' tag --list "v*.*.*" --sort=-v:refname | head -n 1 | sed 's/^v//' | awk \
+  -F'[.+-]' \
+  -v pkg="$VERSION_PKG" \
+  '{ major = $1; minor = $2; patch = $3; pre = ""; if ($4) pre = $4; \
+    printf("-X '\''%s.majorVersion=%s'\'' ", pkg, major); \
+    printf("-X '\''%s.minorVersion=%s'\'' ", pkg, minor); \
+    printf("-X '\''%s.patchVersion=%s'\''", pkg, patch); \
+    if (pre != "") \
+      printf(" -X '\''%s.prereleaseVersion=%s'\''", pkg, pre); \
+  }' > LDFLAGS
+    go build -C cmd/api/src -o /opt/tools/BloodHound-CE/bloodhound -ldflags "$(cat LDFLAGS)" github.com/specterops/bloodhound/cmd/api/src/cmd/bhapi
 
     ## SharpHound
     local sharphound_url
@@ -251,7 +266,6 @@ function install_bloodhound-ce() {
     # Files and directories
     # work directory required by bloodhound
     mkdir -p "${bloodhoundce_path}/work"
-    ln -v -s "${bloodhoundce_path}/src/artifacts/bhapi" "${bloodhoundce_path}/bloodhound"
     cp -v /root/sources/assets/bloodhound-ce/bloodhound-ce /opt/tools/bin/
     cp -v /root/sources/assets/bloodhound-ce/bloodhound-ce-reset /opt/tools/bin/
     cp -v /root/sources/assets/bloodhound-ce/bloodhound-ce-stop /opt/tools/bin/
