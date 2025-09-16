@@ -79,8 +79,8 @@ function install_bettercap() {
     # Custom install because it requires go >= 1.23.0 (default running go is 1.22.2)
     asdf set golang 1.23.0
     mkdir -p .go/bin
-    GOBIN=/opt/tools/bettercap/.go/bin go install -v github.com/bettercap/bettercap@latest
-    /opt/tools/bettercap/.go/bin/bettercap -eval "caplets.update; ui.update; q"
+    GOBIN=/opt/tools/bettercap/.go/bin go install -v github.com/bettercap/bettercap/v2@latest
+    /opt/tools/bettercap/.go/bin/bettercap -eval "caplets.update; q"
     sed -i 's/set api.rest.username user/set api.rest.username bettercap/g' /usr/local/share/bettercap/caplets/http-ui.cap
     sed -i 's/set api.rest.password pass/set api.rest.password exegol4thewin/g' /usr/local/share/bettercap/caplets/http-ui.cap
     sed -i 's/set api.rest.username user/set api.rest.username bettercap/g' /usr/local/share/bettercap/caplets/https-ui.cap
