@@ -15,7 +15,7 @@ function install_exegol-history() {
     cd /opt/tools/Exegol-history || exit
     pipx install --system-site-packages /opt/tools/Exegol-history
     # Temp fix add default profile.sh back to root directory
-    if check_temp_fix_expiry "2025-09-01"; then
+    if check_temp_fix_expiry "2025-10-01"; then
       [ -f /opt/tools/Exegol-history/profile.sh ] || cp /opt/tools/Exegol-history/exegol_history/config/profile.sh /opt/tools/Exegol-history/profile.sh
     fi
     add-aliases exegol-history
@@ -46,13 +46,15 @@ function install_go() {
     # CODE-CHECK-WHITELIST=add-aliases,add-to-list,add-history
     colorecho "Installing go (Golang)"
     asdf plugin add golang https://github.com/asdf-community/asdf-golang.git
-    # 1.19 needed by sliver
-    asdf install golang 1.19
+    # 1.19 needed by sliver (not now ?)
+    # asdf install golang 1.19
     #asdf install golang latest
     #asdf set --home golang latest
     # With golang 1.23 many package build are broken, temp fix to use 1.22.2 as golang latest
-    local temp_fix_limit="2025-09-01"
+    local temp_fix_limit="2025-10-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
+      # 1.24.4 needed for BloodHound-CE
+      asdf install golang 1.24.4
       # 1.24.1 needed for GoExec
       asdf install golang 1.24.1
       # 1.23 needed by BloodHound-CE, and sensepost/ruler
