@@ -102,7 +102,7 @@ function install_mobsf() {
     #  in the mean time, switching to manual venv and an alias for mobsf
     local temp_fix_limit="2025-10-01"
     if check_temp_fix_expiry "$temp_fix_limit"; then
-      python3 -m venv --system-site-packages ./venv
+      python3.13 -m venv --system-site-packages ./venv
       ./venv/bin/python3 -m pip install git+https://github.com/MobSF/yara-python-dex.git
       ./venv/bin/python3 -m pip install .
     fi
